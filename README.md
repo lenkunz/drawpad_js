@@ -1,18 +1,18 @@
-# Drawpad Javascript API
+# Drawpad API
 
-Canvas manager for drawing with multilayer and color manager
+jQuery plugins for create drawpad environment and manager on DOM using canvas.
 
 ## Getting Started
 Download the [production version][min] or the [development version][max].
 
-[min]: https://raw.github.com/lenkyun/drawpad_js/master/dist/drawpad_js.min.js
-[max]: https://raw.github.com/lenkyun/drawpad_js/master/dist/drawpad_js.js
+[min]: https://raw.github.com/lenkyun/drawpad_js/master/dist/drawpad.min.js
+[max]: https://raw.github.com/lenkyun/drawpad_js/master/dist/drawpad.js
 
 In your web page:
 
 ```html
 <script src="jquery.js"></script>
-<script src="dist/drawpad_js.min.js"></script>
+<script src="dist/drawpad.min.js"></script>
 <script>
 jQuery(function($) {
   $.awesome(); // "awesome"

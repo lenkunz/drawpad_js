@@ -20,7 +20,7 @@
       throws(block, [expected], [message])
   */
 
-  module('jQuery#drawpad_js', {
+  module('jQuery#drawpad', {
     // This will run before each test in this module.
     setup: function() {
       this.elems = $('#qunit-fixture').children();
@@ -30,23 +30,23 @@
   test('is chainable', function() {
     expect(1);
     // Not a bad test to run on collection methods.
-    strictEqual(this.elems.drawpad_js(), this.elems, 'should be chainable');
+    strictEqual(this.elems.drawpad(), this.elems, 'should be chainable');
   });
 
   test('is awesome', function() {
     expect(1);
-    strictEqual(this.elems.drawpad_js().text(), 'awesome0awesome1awesome2', 'should be awesome');
+    strictEqual(this.elems.drawpad().text(), 'awesome0awesome1awesome2', 'should be awesome');
   });
 
-  module('jQuery.drawpad_js');
+  module('jQuery.drawpad');
 
   test('is awesome', function() {
     expect(2);
-    strictEqual($.drawpad_js(), 'awesome.', 'should be awesome');
-    strictEqual($.drawpad_js({punctuation: '!'}), 'awesome!', 'should be thoroughly awesome');
+    strictEqual($.drawpad(), 'awesome.', 'should be awesome');
+    strictEqual($.drawpad({punctuation: '!'}), 'awesome!', 'should be thoroughly awesome');
   });
 
-  module(':drawpad_js selector', {
+  module(':drawpad selector', {
     // This will run before each test in this module.
     setup: function() {
       this.elems = $('#qunit-fixture').children();
@@ -56,7 +56,7 @@
   test('is awesome', function() {
     expect(1);
     // Use deepEqual & .get() when comparing jQuery objects.
-    deepEqual(this.elems.filter(':drawpad_js').get(), this.elems.last().get(), 'knows awesome when it sees it');
+    deepEqual(this.elems.filter(':drawpad').get(), this.elems.last().get(), 'knows awesome when it sees it');
   });
 
 }(jQuery));

@@ -1,0 +1,31 @@
+{
+  "name": "drawpad",
+  "title": "Drawpad API",
+  "description": "jQuery plugins for create drawpad environment and manager on DOM using canvas.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/lenkyun/drawpad_js",
+  "author": {
+    "name": "Rapeapach Suwasri",
+    "email": "kagaminelenkyun@gmail.com",
+    "url": "http://lenkyun.tk"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://lenkyun:peanuts_5101@github.com/lenkyun/drawpad_js.git"
+  },
+  "bugs": "https://github.com/lenkyun/drawpad_js/issues",
+  "licenses": [
+    {
+      "type": "CC0",
+      "url": "https://github.com/lenkyun/drawpad_js/blob/master/LICENSE-CC0"
+    },
+    {
+      "type": "1.0",
+      "url": "https://github.com/lenkyun/drawpad_js/blob/master/LICENSE-1.0"
+    }
+  ],
+  "dependencies": {
+    "jquery": "2.1.1"
+  },
+  "keywords": []
+}
