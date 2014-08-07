@@ -1,0 +1,27 @@
+{
+  "name": "drawpad_js",
+  "title": "Drawpad Javascript API",
+  "description": "Canvas manager for drawing with multilayer and color manager",
+  "version": "0.1.0",
+  "homepage": "http://lenkyun.tk/drawpad_js/",
+  "author": {
+    "name": "Rapeapach Suwasri",
+    "email": "kagaminelenkyun@gmail.com",
+    "url": "http://lenkyun.tk/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lenkyun/drawpad_js.git"
+  },
+  "bugs": "http://lenkyun.tk/drawpad_js/bug",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://lenkyun.tk/drawpad_js//blob/master/LICENSE-MIT"
+    }
+  ],
+  "dependencies": {
+    "jquery": "2.1.1"
+  },
+  "keywords": []
+}
