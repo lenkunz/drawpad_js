@@ -27,7 +27,8 @@ module.exports = function(grunt) {
 						src: [
 							'src/pad/core.js',
 							'src/pad/core.*.js'
-						]
+						],
+						filter: 'isFile'
 					},
 					// Layer container
 					{
@@ -36,10 +37,8 @@ module.exports = function(grunt) {
 							'src/pad/layerContainer.js',
 							'src/pad/layerContainer.*.js',
 							'src/pad/layerContainer/*.js'
-						]
-					},
-					{
-						dest: 'dist/each/drawpad.controll.js'
+						],
+						filter: 'isFile'
 					}
 				]
 			},
@@ -102,7 +101,6 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-csslint');
 
 	// Default task.
-	grunt.registerTask('lint' ['jshint']);
-	grunt.registerTask('build', ['lint', 'clean', 'concat']);
+	grunt.registerTask('build', ['clean', 'concat']);
 	grunt.registerTask('default', ['jsonlint', 'build', 'uglify']);
 };
