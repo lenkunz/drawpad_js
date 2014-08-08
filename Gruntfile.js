@@ -19,9 +19,29 @@ module.exports = function(grunt) {
 				banner: '<%= banner %>',
 				stripBanners: true
 			},
-			dist: {
-				src: ['src/<%= pkg.name %>.js'],
-				dest: 'dist/<%= pkg.name %>.js'
+		    build: {
+				files: [
+					// Core
+					{
+						dest: 'dist/each/pad/core.js',
+						src: [
+							'src/pad/core.js',
+							'src/pad/core.*.js'
+						]
+					},
+					// Layer container
+					{
+						dest: 'dist/each/pad/layerContainer.js',
+						src: [
+							'src/pad/layerContainer.js',
+							'src/pad/layerContainer.*.js',
+							'src/pad/layerContainer/*.js'
+						]
+					},
+					{
+						dest: 'dist/each/drawpad.controll.js'
+					}
+				]
 			},
 		},
 		uglify: {
@@ -31,13 +51,10 @@ module.exports = function(grunt) {
 					unused: false
 				},
 			},
-			dist: {
+			build: {
 				src: '<%= concat.dist.dest %>',
 				dest: 'dist/<%= pkg.name %>.min.js'
 			},
-		},
-		qunit: {
-			files: ['test/**/*.html']
 		},
 		jshint: {
 			options: {
@@ -72,14 +89,6 @@ module.exports = function(grunt) {
 				src : [ "package.json" ]
 			}
 		},
-		csslint: {
-			site: {
-				options: {
-					import: 2
-				},
-				src: ['test/drawpad.css']
-			}
-		}
 	});
 
 	// These plugins provide necessary tasks.
@@ -87,14 +96,13 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
-	// grunt.loadNpmTasks('grunt-contrib-qunit');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
-	// grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-jsonlint');
 	grunt.loadNpmTasks('grunt-contrib-csslint');
 
 	// Default task.
-	grunt.registerTask('lint' ['jshint'])
-	grunt.registerTask('dev', ['lint', 'clean', 'concat']);
-	grunt.registerTask('default', ['jsonlint', 'dev', 'uglify']);
+	grunt.registerTask('lint' ['jshint']);
+	grunt.registerTask('build', ['lint', 'clean', 'concat']);
+	grunt.registerTask('default', ['jsonlint', 'build', 'uglify']);
 };
