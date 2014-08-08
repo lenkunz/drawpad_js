@@ -18,9 +18,8 @@ In your web page:
 <script>
 $(document).ready(function(){
 	// Drawpad is for contain PadUI and Pad only
-	// Only function it own is drawpad.get(@UI);
-	//     When @UI is case-insensitive
-	// 
+	// Only function it has is drawpad.get(@UI);
+	//     When @UI is case-insensitive mode
 	var PadUI = drawpad.get('UI'),
 		Pad   = drawpad.get('PAD');
 		
