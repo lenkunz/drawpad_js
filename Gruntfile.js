@@ -12,36 +12,11 @@ module.exports = function(grunt) {
 			' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
 		// Task configuration.
 		clean: {
-			files: ['dist']
+			files: [ 'dist' ]
 		},
-		concat: {
-			options: {
-				banner: '<%= banner %>',
-				stripBanners: true
-			},
-		    build: {
-				files: [
-					// Core
-					{
-						dest: 'dist/each/pad/core.js',
-						src: [
-							'src/pad/core.js',
-							'src/pad/core.*.js'
-						],
-						filter: 'isFile'
-					},
-					// Layer container
-					{
-						dest: 'dist/each/pad/layerContainer.js',
-						src: [
-							'src/pad/layerContainer.js',
-							'src/pad/layerContainer.*.js',
-							'src/pad/layerContainer/*.js'
-						],
-						filter: 'isFile'
-					}
-				]
-			},
+		builder: {
+			dest: 'dist/drawpad.js',
+			name: 'drawpad'
 		},
 		uglify: {
 			options: {
@@ -63,24 +38,24 @@ module.exports = function(grunt) {
 				src: 'Gruntfile.js'
 			},
 			src: {
-				src: ['src/**/*.js']
+				src: [ 'src/**/*.js' ]
 			},
 			test: {
-				src: ['test/**/*.js']
+				src: [ 'test/**/*.js' ]
 			},
 		},
 		watch: {
 			gruntfile: {
 				files: '<%= jshint.gruntfile.src %>',
-				tasks: ['jshint:gruntfile']
+				tasks: [ 'jshint:gruntfile' ]
 			},
 			src: {
 				files: '<%= jshint.src.src %>',
-				tasks: ['jshint:src', 'qunit']
+				tasks: [ 'jshint:src', 'qunit' ]
 			},
 			test: {
 				files: '<%= jshint.test.src %>',
-				tasks: ['jshint:test', 'qunit']
+				tasks: [ 'jshint:test', 'qunit' ]
 			},
 		},
 		jsonlint: {
@@ -89,18 +64,20 @@ module.exports = function(grunt) {
 			}
 		},
 	});
+	
+	require( "load-grunt-tasks" )( grunt );
 
 	// These plugins provide necessary tasks.
 	// Check if it has installed
-	grunt.loadNpmTasks('grunt-contrib-clean');
-	grunt.loadNpmTasks('grunt-contrib-concat');
-	grunt.loadNpmTasks('grunt-contrib-uglify');
-	grunt.loadNpmTasks('grunt-contrib-jshint');
-	grunt.loadNpmTasks('grunt-contrib-watch');
-	grunt.loadNpmTasks('grunt-jsonlint');
-	grunt.loadNpmTasks('grunt-contrib-csslint');
+	grunt.loadNpmTasks( 'grunt-contrib-clean' );
+	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
+	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
+	grunt.loadNpmTasks( 'grunt-contrib-watch' );
+	grunt.loadNpmTasks( 'grunt-jsonlint' );
+	grunt.loadNpmTasks( 'grunt-contrib-csslint' );
 
 	// Default task.
-	grunt.registerTask('build', ['clean', 'concat']);
-	grunt.registerTask('default', ['jsonlint', 'build', 'uglify']);
+	grunt.registerTask( "lint", [ "jshint" ] );
+	grunt.registerTask( "build", [ "lint", "clean", "concat" ]);
+	grunt.registerTask( "default", [ "jsonlint", "build", "uglify" ]);
 };
