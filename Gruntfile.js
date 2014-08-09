@@ -1,33 +1,34 @@
-'use strict';
+"use strict";
 
 module.exports = function(grunt) {
+
 	// Project configuration.
 	grunt.initConfig({
 		// Metadata.
-		pkg: grunt.file.readJSON('drawpad.jquery.json'),
-		banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
-			'<%= grunt.template.today("yyyy-mm-dd") %>\n' +
-			'<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
-			'* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
-			' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
+		pkg: grunt.file.readJSON("package.json"),
+		banner: "/*! <%= pkg.title || pkg.name %> v<%= pkg.version %> |" +
+			" Copyright (c) <%= grunt.template.today('yyyy') %> <%= pkg.author.name %> |" +
+			" <%= pkg.licenses.url %> */\n",
 		// Task configuration.
 		clean: {
-			files: [ 'dist' ]
+			files: [ "dist/*.js" ]
 		},
-		builder: {
-			dest: 'dist/drawpad.js',
-			name: 'drawpad'
+		build: {
+			all: {
+				dest: "dist/drawpad.js",
+				name: "drawpad"
+			}
 		},
 		uglify: {
 			options: {
-				banner: '<%= banner %>',
+				banner: "<%= banner %>",
 				compress: {
 					unused: false
 				},
 			},
 			build: {
-				src: '<%= concat.dist.dest %>',
-				dest: 'dist/<%= pkg.name %>.min.js'
+				src: "<%= build.all.dest %>",
+				dest: "dist/<%= pkg.name %>.min.js"
 			},
 		},
 		jshint: {
@@ -35,29 +36,38 @@ module.exports = function(grunt) {
 				jshintrc: true
 			},
 			gruntfile: {
-				src: 'Gruntfile.js'
+				src: "Gruntfile.js"
 			},
-			src: {
-				src: [ 'src/**/*.js' ]
+			build: {
+				src: [ "src/*.js", "src/**/*.js" ]
 			},
+			dist: {
+				src: [ "dist/*.js" ]
+			}
 		},
 		watch: {
 			gruntfile: {
-				files: '<%= jshint.gruntfile.src %>',
-				tasks: [ 'jshint:gruntfile' ]
+				files: "<%= jshint.gruntfile.src %>",
+				tasks: [ "jshint:gruntfile" ]
 			},
 			src: {
-				files: '<%= jshint.src.src %>',
-				tasks: [ 'jshint:src', 'qunit' ]
+				files: "<%= jshint.src.src %>",
+				tasks: [ "jshint:src", "qunit" ]
 			},
 			test: {
-				files: '<%= jshint.test.src %>',
-				tasks: [ 'jshint:test', 'qunit' ]
+				files: "<%= jshint.test.src %>",
+				tasks: [ "jshint:test", "qunit" ]
 			},
 		},
 		jsonlint: {
 			pkg : {
 				src : [ "package.json" ]
+			},
+			src : {
+				src: [	"src/.jshintrc", 
+						"src/**/.jshintrc", 
+						"dist/.jshintrc", 
+						"dist/**/.jshintrc" ]
 			}
 		},
 	});
@@ -70,15 +80,15 @@ module.exports = function(grunt) {
 	
 	// These plugins provide necessary tasks.
 	// Check if it has installed
-	grunt.loadNpmTasks( 'grunt-contrib-clean' );
-	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
-	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
-	grunt.loadNpmTasks( 'grunt-contrib-watch' );
-	grunt.loadNpmTasks( 'grunt-jsonlint' );
-	grunt.loadNpmTasks( 'grunt-contrib-csslint' );
+	grunt.loadNpmTasks( "grunt-contrib-clean" );
+	grunt.loadNpmTasks( "grunt-contrib-uglify" );
+	grunt.loadNpmTasks( "grunt-contrib-jshint" );
+	grunt.loadNpmTasks( "grunt-contrib-watch" );
+	grunt.loadNpmTasks( "grunt-jsonlint" );
+	grunt.loadNpmTasks( "grunt-contrib-csslint" );
 
 	// Default task.
 	grunt.registerTask( "lint", [ "jshint" ] );
-	grunt.registerTask( "build", [ "lint", "clean", "builder"]);
-	grunt.registerTask( "default", [ "jsonlint", "build", "uglify" ]);
+	grunt.registerTask( "dev", [ "clean", "build", "lint"]);
+	grunt.registerTask( "default", [ "jsonlint", "dev", "uglify" ]);
 };

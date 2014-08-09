@@ -1,0 +1,2 @@
+	window.drawpad = require("drawpad");
+}));

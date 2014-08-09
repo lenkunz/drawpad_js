@@ -3,22 +3,18 @@
 <head>
 <title>Test drawpad API</title>
 <!-- Load local QUnit. -->
-<link rel="stylesheet" href="../libs/qunit/qunit.css" media="screen">
 <link rel="stylesheet" href="./drawpad.css" media="screen">
-<script src="../libs/jquery/jquery.js"></script>
+<script src="./jquery.min.js"></script>
+<script src="./require.min.js"></script>
 <script src="../dist/drawpad.js"></script>
 <script>
-$(document).ready(function (){
-	// init padController
-	var c = padController.init($("#wrap"), $("#layer-container #layer-roller"));
-	c.event.create
-	
-	pad.init($("#drawpad-layers"), $("#drawpad-writer"));
-	
-	$(document).keypress(callKeyFunction);
-	$(".replay").click(history.replay);
-	
-	startPadListener();
+// Check if drawpad load status is OK
+drawpad.on('ok', function( elem ){
+	console.log("[site/drawpad] Succesful loaded.");
+}).on('error', function( err ){
+	for( str in error ){
+		console.warn("[site/drawpad] " + error);
+	}
 });
 </script>
 </head>

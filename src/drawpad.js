@@ -1,26 +1,54 @@
-/*
- * drawpad
- * https://github.com/lenkyun/drawpad_js
- *
- * Copyright (c) 2014 Rapeapach Suwasri
- * Licensed under the CC0, 1.0 licenses.
- */
-
-define(["./Pad/core", "/PadUI/core"], function(Pad, PadUI){
+define([
+	"./Pad/pad"
+], function(){
 	var drawpad = {},
 		data = {
-			"Pad": Pad,
-			"PadUI": PadUI
-		};
-	
-	drawpad.get = {
-		get: function(str){
-			if(str && data[str]){
-				return data[str];
-			}
-			return false;
+			"Pad": undefined,
+			"PadUI": undefined,
+			"window": window,
+			"jQuery": $,
+			"document": document
+		}, event = {};
+		
+	var get = function( str ){
+		if( str && data[str] ){
+			return data[str];
 		}
+		return false;
 	};
+
 	
+	extend( event, {
+		ok: {
+			status: function(){
+				return _error.length === 0;
+			},
+			call: function( callback ){
+				callback( get );
+			}
+		},
+		error: {
+			status: function(){
+				return _error.length !== 0;
+			},
+			call: function( callback ){
+				callback( _error );
+			}
+		},
+	});
+	
+	/*
+	 * Status object is similar to ./Pad/object/status
+	 *   @stat - status name
+	 */
+	drawpad.on = function( stat, callback ){
+		$(document).ready(function(){
+			if(typeof event[stat] !== "undefined" && event[stat].status()){
+				event[stat].call(callback);
+			}
+		});
+		return this;
+	};
+		
 	return drawpad;
 });
