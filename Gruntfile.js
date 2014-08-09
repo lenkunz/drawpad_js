@@ -40,9 +40,6 @@ module.exports = function(grunt) {
 			src: {
 				src: [ 'src/**/*.js' ]
 			},
-			test: {
-				src: [ 'test/**/*.js' ]
-			},
 		},
 		watch: {
 			gruntfile: {
@@ -65,8 +62,12 @@ module.exports = function(grunt) {
 		},
 	});
 	
+	// load-grunt-task from NPM
 	require( "load-grunt-tasks" )( grunt );
-
+	
+	// load specified task
+	grunt.loadTasks( "build/tasks" );
+	
 	// These plugins provide necessary tasks.
 	// Check if it has installed
 	grunt.loadNpmTasks( 'grunt-contrib-clean' );
@@ -78,6 +79,6 @@ module.exports = function(grunt) {
 
 	// Default task.
 	grunt.registerTask( "lint", [ "jshint" ] );
-	grunt.registerTask( "build", [ "lint", "clean", "concat" ]);
+	grunt.registerTask( "build", [ "lint", "clean", "builder"]);
 	grunt.registerTask( "default", [ "jsonlint", "build", "uglify" ]);
 };

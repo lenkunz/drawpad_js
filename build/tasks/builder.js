@@ -4,6 +4,7 @@ module.exports = function( grunt ){
 	"use strict";
 	
 	var fs = require('fs'),
+		requirejs = require('requirejs'),
 		config = {
 			baseUrl: "/../../src",
 			paths:{
@@ -15,12 +16,13 @@ module.exports = function( grunt ){
 			skipSemiColonInsertion: true
 		};
 	
-	grunt.registerMultitask(
+	grunt.registerMultiTask(
 		"builder",
 		"Concatenate source, and some edit ^w^",
 		function(){
 			var done = this.async(),
-				version = grunt.config( "pkg.version" );
+				version = grunt.config( "pkg.version" ),
+				name = this.data.dest;
 			
 			if( process.env.COMMIT ){
 				version += "_" + process.env.COMMIT
@@ -35,6 +37,17 @@ module.exports = function( grunt ){
 			}
 			
 			grunt.config.set( "pkg.version", version );
+			
+			config.out = function( complied ){
+				complied = complied
+					.replace( /@VERSION/g, version )
+				grunt.file.write( name, complied );
+			}
+			
+			requirejs.optimize( config, function( response ){
+				grunt.verbose.writeln( response );
+				grunt.log.ok( "File " + name + " created." );
+			});
 		}
 	);
 }

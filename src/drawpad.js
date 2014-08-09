@@ -6,8 +6,21 @@
  * Licensed under the CC0, 1.0 licenses.
  */
 
-(function($) {
-	define(["./pad/core", "/controller/core"],function(pad, core){
+define(["./Pad/core", "/PadUI/core"], function(Pad, PadUI){
+	var drawpad = {},
+		data = {
+			"Pad": Pad,
+			"PadUI": PadUI
+		};
 	
-	});
-}(jQuery));
+	drawpad.get = {
+		get: function(str){
+			if(str && data[str]){
+				return data[str];
+			}
+			return false;
+		}
+	};
+	
+	return drawpad;
+});
