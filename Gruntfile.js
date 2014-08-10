@@ -30,6 +30,10 @@ module.exports = function(grunt) {
 				src: "<%= build.all.dest %>",
 				dest: "dist/<%= pkg.name %>.min.js"
 			},
+			test: {
+				src: "<%= build.all.dest %>",
+				dest: "test/<%= pkg.name %>.min.js"
+			},
 		},
 		jshint: {
 			options: {

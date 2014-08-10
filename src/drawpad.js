@@ -1,9 +1,9 @@
 define([
 	"./Pad/pad"
-], function(){
+], function(pad){
 	var drawpad = {},
 		data = {
-			"Pad": undefined,
+			"Pad": pad,
 			"PadUI": undefined,
 			"window": window,
 			"jQuery": $,
@@ -11,12 +11,11 @@ define([
 		}, event = {};
 		
 	var get = function( str ){
-		if( str && data[str] ){
-			return data[str];
+		if( str && data[ str ] ){
+			return data[ str ];
 		}
 		return false;
 	};
-
 	
 	extend( event, {
 		ok: {
@@ -42,13 +41,13 @@ define([
 	 *   @stat - status name
 	 */
 	drawpad.on = function( stat, callback ){
-		$(document).ready(function(){
-			if(typeof event[stat] !== "undefined" && event[stat].status()){
-				event[stat].call(callback);
+		$( document ).ready( function(){
+			if( typeof event[stat] !== "undefined" && event[stat].status() ){
+				event[ stat ].call( callback );
 			}
 		});
 		return this;
 	};
-		
+	
 	return drawpad;
 });

@@ -1,2 +1,5 @@
-	window.drawpad = require("drawpad");
+
+	require(["drawpad"], function(drawpad){
+		window.drawpad = drawpad;
+	});
 }));

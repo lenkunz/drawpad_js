@@ -5,16 +5,23 @@
 <!-- Load local QUnit. -->
 <link rel="stylesheet" href="./drawpad.css" media="screen">
 <script src="./jquery.min.js"></script>
-<script src="./require.min.js"></script>
-<script src="../dist/drawpad.js"></script>
 <script>
-// Check if drawpad load status is OK
-drawpad.on('ok', function( elem ){
-	console.log("[site/drawpad] Succesful loaded.");
-}).on('error', function( err ){
-	for( str in error ){
-		console.warn("[site/drawpad] " + error);
-	}
+extend = $.extend;
+_error = [];
+</script>
+<script data-main="../src/drawpad.js" src="./require.min.js"></script>
+<xscript src="./require.min.js"></xscript>
+<xscript src="../dist/drawpad.js"></xscript>
+<script>
+require(['drawpad'], function(drawpad){
+	// Check if drawpad load status is OK
+	drawpad.on( 'ok', function( elem ){
+		console.log("[site/drawpad] Successful loaded.");
+	}).on( 'error', function( err ){
+		for( i in err ){
+			console.warn("[site/drawpad] " + err[i]);
+		}
+	});
 });
 </script>
 </head>
