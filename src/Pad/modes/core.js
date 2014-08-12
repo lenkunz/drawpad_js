@@ -1,19 +1,25 @@
 define([
 	"../object",
 ], function( object ){
+
 	var modes = function(){
-		var modes = {}, settings;		
-		var setting = new object.Settings({
+		var modes = {},		
+			setting = new object.Settings({
 			data: {}
 		});
 		setting = setting.create( this );
 		
 		$.extend( modes, {
-			mode: true,
+			regisPad: function( pad ){
+				var v = setting.get( "data" );
+				for( var i in v ){
+					v[i].regisPad( pad );
+				}
+			},
 			add: function( index, modeObject ){
 				if( modeObject && modeObject.mode ){
 					if( !( setting.isset( "data", index ) || setting.isset( "data", modeObject.name ) ) ){
-						modeObject = object.Mode( modeObject );
+						modeObject.defines = this.defines;
 						setting.set( "data", index, modeObject );
 						setting.set( "data", modeObject.name, modeObject );
 						this.defineMode[ modeObject.name ] = index;
@@ -34,18 +40,13 @@ define([
 					return new object.Mode();
 				}
 			},
-			defineMode: {
-				Line: 0,
-				CreateLayer: 1,
-				ChangeLayerSetting: 2
-			},
-			define: {
+			defineMode: {},
+			defines: {
 				drawType: 0,
-				width: 1,
-				color: 2,
-				time: 3,
-				axis: 4,
-				layer: 5
+				time: 1,
+				axis: 2,
+				value: 2,
+				layer: 3
 			}
 		});
 	};

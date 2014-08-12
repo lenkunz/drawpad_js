@@ -1,7 +1,6 @@
 define([
-	"./core",
 	"./object",
-], function( pad, object, modes ){
+], function( object, modes ){
 	var layer = function(){
 		// Section - Layer
 		// Private static zone
@@ -12,7 +11,8 @@ define([
 			data: [],
 			write: false,
 			root: false,
-			count: 0
+			count: 0,
+			pad: false
 		});
 		setting = setting.create( this );
 
@@ -27,18 +27,26 @@ define([
 			return i;
 		};
 		
+		var pad;
+		
 		// Public static function and variable
 		extend(layer, {
+			regisPad: function( padObject ){
+				if( setting.get( "pad" ) === false ){
+					setting.set( "pad", padObject );
+					pad = padObject;
+				}
+			},
 			root: function( e ){
 				if( setting.get( "root" ) === false && e !== undefined ){
 					setting.set( "root", e );
 				}else{
-					setting.get( "root" );
+					return setting.get( "root" );
 				}
 				return this;
 			},
 			write: function( e ){
-				if( setting.get( "write" ) === false && e !== undefined ){
+				if( setting.get( "write" ) === false && typeof e !== "undefined" ){
 					setting.set( "write", e );
 				}else{
 					setting.get( "write" );
@@ -83,14 +91,18 @@ define([
 			},
 			index: function( i ){
 				if( typeof i === "undefined" ){
-					return setting.get( "index" );
-				}else{
+					return this.getLayer();
+				} else if ( isNaN( i ) ) {
 					if( i < 0 ){
 						return false;
 					}
 					if( i === setting.get( "index" ) ){
 						return true;
 					}
+					if( i > setting.get( "data" ).length ){
+						return false;
+					}
+					
 					this.write().order( i );
 					setting.set( "index", i );
 					console.log( "%c[drawpad.layer.index] Layer index changed to [%i].", "font-weight: bold; color: darkorange", i );	
@@ -101,15 +113,22 @@ define([
 						console.warn("[drawpad.layer.index] Error in style.layer.");
 					}
 					this.getLayer().changethis();
+				} else if( i.layer ) {
+					var x;
+					if( ( x = setting.get( "data" ).indexOf( i ) ) !== -1 ){
+						this.index( x );
+					} else {
+						return false;
+					}
 				}
 				return true;
 			},
-			set: function(layer, setting){
+			set: function( setting ){
 				var o, l, old;
+				l = this();
 				o = this.defines.options;
-				l = this(layer);
 				
-				switch(setting.mode){
+				switch( setting.mode ){
 					case o.opacity:
 						old = l.opacity();
 						l.opacity(setting.value);
@@ -120,21 +139,12 @@ define([
 					break;
 				}
 				
-				modes.ChangeLayerSetting.eventSave(setting);
-				history.saveFunction({
-					data: {
-						oldValue: old,
-						newValue: setting.value,
-						layer: l,
-						dThis: this
-					},
-					redo: function(){
-						this.dThis.set(this.data.layer, this.data.newValue);
-					},
-					undo: function(){
-						this.dThis.set(this.data.layer, this.data.oldValue);				
-					}
-				});
+				var data = {
+					mode: setting.mode,
+					oldvalue: old,
+					newvalue: setting.value,
+				};
+				pad.modes.ChangeLayerSetting.eventSave( data );
 			},
 			clear: function(){
 				$.each(this.data, function(i, o){
@@ -154,7 +164,7 @@ define([
 				} else if ( setting.isset( "data", i ) ){
 					return false;
 				} else{
-					return setting.get( "data" )[ i ];
+					return setting.get( "data" )[i];
 				}
 			},
 			resetCount: function(){

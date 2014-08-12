@@ -1,17 +1,22 @@
 define(function(){
-	Mode = function(){
+	var Mode = function(){
 		/* Section: Modes - Mode */
 		// Creator
-		var Mode = object.Mode = function(dat){
-			if(!dat) dat = {};
+		var Mode = function(dat){
+			if( !dat ){
+				dat = {};
+			}
 			return $.extend({}, Mode, dat);
-		}
+		};
 		
 		// Static
-		$.extend(object.Mode, {
+		extend(Mode, {
 			mode: true,
 			name: "NewMode",
 			thisIndex: -1,
+			dataCheck: function(data){
+				return data[this.defines.drawType] === this.thisIndex;
+			},
 			eventTrigger: function(){
 				console.warn("[drawpad.object.Mode] call undefined eventTrigger!![%s][%0]", this.name, this);
 			},
@@ -25,7 +30,7 @@ define(function(){
 				console.warn("[drawpad.object.Mode] call undefined draw!![%s][%0]", this.name, this);
 			},
 			data: {}
-		})
+		});
 		/* End Section: Object - Mode */
 		
 		return Mode;

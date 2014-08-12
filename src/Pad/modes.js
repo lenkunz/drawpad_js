@@ -1,12 +1,18 @@
 define([
-	"./modes/core"
+	"./modes/core",
 	"./modes/Line",
-	"./modes/CreateLine",
-	"./modes/ChageLayerSetting"
-], function( modes, Line, CreateLine, ChangeLayerSetting ){
-	var x = function(){
+	"./modes/CreateLayer",
+	"./modes/ChangeLayerSetting"
+], function( modes, Line, CreateLayer, ChangeLayerSetting ){
+	var mode = function(){
 		modes.add(0, Line);
-		modes.add(1, CreateLine);
-		modes.add(2, ChageLayerSetting);
-	}
-}
+		modes.add(1, CreateLayer);
+		modes.add(2, ChangeLayerSetting);		
+		return modes;
+	};
+	
+	modes = mode();
+	mode = undefined;
+	
+	return modes;
+});
