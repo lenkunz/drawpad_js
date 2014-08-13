@@ -15,14 +15,23 @@ define([
 			pad: false
 		});
 		setting = setting.create( this );
-
+		var ev = setting.event;
+		
+		ev.add( "create" );
+		ev.add( "remove" );
+		ev.add( "removeAll" );
+		ev.add( "indexChange" );
+		ev.add( "changeLayerSetting" );
+		ev.add( "clearLayer" );
+		ev.add( "reset" );
+		
 		// Defining function - not a constructor
 		layer = function( i ){
 			if( typeof i === "undefined" ){
-				i = layer.getLayer();
+				i = pad.layer.getLayer();
 			}
 			if( typeof i.layer === "undefined" ){
-				i = layer.getLayer(i);
+				i = pad.layer.getLayer(i);
 			}
 			return i;
 		};
@@ -31,6 +40,9 @@ define([
 		
 		// Public static function and variable
 		extend(layer, {
+			on: function( name, func ){
+				return ev.on( name, func );
+			},
 			regisPad: function( padObject ){
 				if( setting.get( "pad" ) === false ){
 					setting.set( "pad", padObject );
@@ -49,22 +61,21 @@ define([
 				if( setting.get( "write" ) === false && typeof e !== "undefined" ){
 					setting.set( "write", e );
 				}else{
-					setting.get( "write" );
+					return setting.get( "write" );
 				}
-				return this;
 			},
 			create: function(){
 				layer = new object.Layer(
 					setting.add( "indexCount" ), 
 					"drawpad", 
-					pad.setting.get( "CANVAS_WIDTH" ), 
-					pad.setting.get( "CANVAS_HEIGHT" )
+					pad.settings.get( "CANVAS_WIDTH" ), 
+					pad.settings.get( "CANVAS_HEIGHT" )
 				);
-				setting.root.append( layer.getDOM( "$" ) );
+				setting.get( "root" ).append( layer.getDOM( "$" ) );
 				
 				modes.get( "CreateLayer" ).eventSave();
 				setting.get( "data" ).push( layer );
-				this.callback.create(layer);
+				ev.run( "create", this, { layer: layer } );
 			},
 			remove: function( i ){
 				var dat = setting.get( "data" ), index;
@@ -74,6 +85,7 @@ define([
 					}
 				} else {
 					if( typeof dat[ index ] !== "undefined" ){
+						ev.run( "remove", this, { layer: layer } );
 						dat[ index ].remove();
 						this.data.splice( index, 1 );
 					}
@@ -82,12 +94,13 @@ define([
 			},
 			removeAll: function(){
 				$.each(this.data, function(i, o){
+					ev.run( "remove", this, { layer: o } );
 					o.DOM.$.remove();
 				});
 				this.data = [];
 				this.resetCount();
 				console.log("%c[drawpad.layer.removeAll] All layer was removed.", "font-weight: bold; color: darkorange");
-				this.callback.removeAll();
+				ev.run( "removeAll", this, {} );
 			},
 			index: function( i ){
 				if( typeof i === "undefined" ){
@@ -113,10 +126,12 @@ define([
 						console.warn("[drawpad.layer.index] Error in style.layer.");
 					}
 					this.getLayer().changethis();
+					ev.run( "changeIndex", this, { layer: this.getLayer() } );
 				} else if( i.layer ) {
 					var x;
 					if( ( x = setting.get( "data" ).indexOf( i ) ) !== -1 ){
 						this.index( x );
+						ev.run( "changeIndex", this, { layer: this.getLayer() } );
 					} else {
 						return false;
 					}
@@ -144,11 +159,13 @@ define([
 					oldvalue: old,
 					newvalue: setting.value,
 				};
-				pad.modes.ChangeLayerSetting.eventSave( data );
+				pad.modes.get( "ChangeLayerSetting" ).eventSave( data );
+				ev.run( "changeLayerSetting", this, data );
 			},
 			clear: function(){
 				$.each(this.data, function(i, o){
 					o.clear();
+					ev.run( "clear", this, { layer: o } );
 				});
 			},
 			defines: {
@@ -169,8 +186,10 @@ define([
 			},
 			resetCount: function(){
 				setting.set( "count", 0 );
+				ev.run( "reset", this, {} );
 			},
 		});
+		return layer;
 	};
 	
 	layer = layer();

@@ -24,6 +24,7 @@
 		"$": true,
 		"extend": true,
 		"_error": true,
-		"console": true
+		"console": true,
+		"msgpack": true
 	}
 }

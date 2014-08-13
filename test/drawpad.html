@@ -5,23 +5,24 @@
 <!-- Load local QUnit. -->
 <link rel="stylesheet" href="./drawpad.css" media="screen">
 <script src="./jquery.min.js"></script>
+<script src="./msgpack.js"></script>
+<script src="../dist/drawpad.js"></script>
 <script>
-extend = $.extend;
-_error = [];
-</script>
-<script data-main="../src/drawpad.js" src="./require.min.js"></script>
-<xscript src="./require.min.js"></xscript>
-<xscript src="../dist/drawpad.js"></xscript>
-<script>
-require(['drawpad'], function(drawpad){
-	// Check if drawpad load status is OK
-	drawpad.on( 'ok', function( elem ){
-		console.log("[site/drawpad] Successful loaded.");
-	}).on( 'error', function( err ){
-		for( i in err ){
-			console.warn("[site/drawpad] " + err[i]);
-		}
-	});
+// Check if drawpad load status is OK
+drawpad.on( 'ok', function( padCollection ){
+	console.log("[site/drawpad] drawpad module was loaded");
+	pad = padCollection.get( "Pad" );
+	pad.init({
+		layer: $("#drawpad-layers"),
+		write: $("#drawpad-writer")
+	})
+	
+	window.pad = pad;
+
+}).on( 'error', function( err ){
+	for( i in err ){
+		console.warn("[site/drawpad] " + err[i]);
+	}
 });
 </script>
 </head>

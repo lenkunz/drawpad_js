@@ -1,12 +1,12 @@
 define([
 	"../object",
 ], function( object ){
-
+	// Modes - core
 	var modes = function(){
 		var modes = {},		
 			setting = new object.Settings({
-			data: {}
-		});
+				data: {}
+			});
 		setting = setting.create( this );
 		
 		$.extend( modes, {
@@ -24,18 +24,20 @@ define([
 						setting.set( "data", modeObject.name, modeObject );
 						this.defineMode[ modeObject.name ] = index;
 						this.defineMode[ index ] = modeObject.name;
-						console.log( "%c[drawpad.modes.add] drawpad.object.Mode named [%s] was added to drawpad.modes[%d], drawpad.modes.%s", "font-weight: bold; color: darkred", modeObject.name, index, modeObject.name );
+						console.log( "%c[drawpad.modes.add] drawpad.object.Mode named [%s] was added to drawpad.modes/[%d], drawpad.modes/%s", "font-weight: bold; color: darkred", modeObject.name, index, modeObject.name );
 					}else{
-						console.warn( "[drawpad.mode.add] index [%d] OR name [%s] was already defined.", index, modeObject.name );
+						console.warn( "[drawpad.modes.add] index [%d] OR name [%s] was already defined.", index, modeObject.name );
 					}
 				} else {
-					console.warn( "[drawpad.modes.add] Invalid parameter type." );
+					console.error( "[drawpad.modes.add] Invalid parameter type." );
 					return false;
 				}
 			},
-			get: function(str){
+			get: function(str, bool){
 				if( setting.isset( "data", str ) ){
 					return setting.get( "data", str );
+				} else if( typeof bool !== "undefined" && bool ) {
+					return false;
 				} else {
 					return new object.Mode();
 				}
@@ -44,11 +46,14 @@ define([
 			defines: {
 				drawType: 0,
 				time: 1,
-				axis: 2,
-				value: 2,
-				layer: 3
+				name: 2,
+				axis: 3,
+				value: 3,
+				layer: 4
 			}
 		});
+		
+		return modes;
 	};
 	
 	modes = modes();

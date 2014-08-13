@@ -1,11 +1,16 @@
 define([
 	"./core",
 	"./layer",
-	"./modes"
-], function(pad, layer, modes){
+	"./modes",
+	"./event/mouse",
+	"./history"
+], function(pad, layer, modes, mouse, history){
 	pad.extend({
 		layer: layer,
-		modes: modes
+		modes: modes,
+		mouse: mouse,
+		history: history
 	});
+	
 	return pad;
 });

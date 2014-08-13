@@ -6,10 +6,10 @@
  * Released under the MIT license
  * http://lenkyun.tk/drawpad/license
  *
- * Date: 2014-08-12T15:54Z
+ * Date: 2014-08-13T16:54Z
  */
  
-(function( w, $, require, define, func ){
+(function( w, $, func ){
 	var error = [], msg;
 	if( typeof $ === "undefined" || typeof console === "undefined" ){
 		msg = "[drawpad] drawpad require jQuery to run, please set-it-up on your page.";
@@ -22,42 +22,37 @@
 		error.push( msg );
 		console.warn( msg );
 	}
+		
+	func( w, w.document, $, $.extend, error);
 	
-	if( typeof require === "undefined" && typeof define === "undefined" ){
-		require = function(){};
-
-		msg = "[drawpad] drawpad require RequireJS to run, please set-it-up on your page.";
-		error.push( msg );
-		console.warn( msg );
-	}
-	
-	func( w, w.document, $, $.extend, error, require );
-	
-}(typeof window !== "undefined" ? window : this, jQuery, require, define, function( window, document, $, extend, _error, require ){
+}( typeof window !== "undefined" ? window : this, jQuery, function( window, document, $, extend, _error ){
 
 	var Settings = function(){
-		var Settings = {};
+		var Settings = {},
+			intCount = 0,
+			data = {};
 		
 		Settings = function( obj ){
 			if( obj ){
+				this.index = intCount;
 				this.set(obj);
-				data[this] = {};
+				data[intCount++] = {};
 			}
 		};
 		
-		var data = {};
 		
 		Settings.prototype = {
 			ex: {},
+			index: -1,
 			get: function( obj ){
-				if(typeof obj !== "undefined" && typeof this[obj] !== "undefined"){
-					return data[ this ][ obj ];
+				if(typeof obj !== "undefined" && typeof data[ this.index ][obj] !== "undefined"){
+					return data[ this.index ][ obj ];
 				}
 				return 0;
 			},
 			create: function( obj ){
-				data[ this ][ obj ] = $.extend({}, this.ex);
-				return data[ this ][ obj ];
+				data[ this.index ][ obj ] = $.extend({}, this.ex);
+				return data[ this.index ][ obj ];
 			},
 			set: function( obj ){
 				var event, set, add, get, isset;
@@ -68,7 +63,7 @@
 						if( typeof name === "undefined" ){
 							return false;
 						}
-						if( typeof this.event.data[name] === "undefined" ){
+						if( typeof this.data[name] === "undefined" ){
 							this.data[name] = [];
 						}
 						if( typeof call === "function" ){
@@ -127,8 +122,8 @@
 					if( typeof a !== "undefined"){
 						if( typeof b !== "undefined" ){
 							if( arguments.length > 2 ){
-								var referer = this.data[ a ][ b ], i;
-								for( i = 2; i < arguments.length - 2; i++ ){
+								var referer = this.data, i;
+								for( i = 0; i < arguments.length - 2; i++ ){
 									referer = referer[ arguments[ i ] ];
 								}
 								referer[ arguments[ i ] ] = arguments[ i + 1 ];
@@ -168,8 +163,8 @@
 				};
 				
 				isset = function( name ){
-					if( typeof name !== "undefined" && typeof this.data[ name ] !== "undefined" ){
-						var value, v;
+					if( typeof name !== "undefined" ){
+						var value = this.data, v;
 
 						for( var i in arguments ){
 							v = arguments[i];
@@ -238,7 +233,6 @@
 				}
 			});
 			
-			
 		// constructor
 		var Layer = function(index, className, width, height){
 			// init
@@ -254,7 +248,7 @@
 			
 			// init DOM
 			var canvas = $("<canvas></canvas>").attr({
-				"id": className + "_" + this.id,
+				"id": className + "_" + index,
 				"width": width,
 				"height": height
 			}).addClass(className);
@@ -348,7 +342,7 @@
 				return this;
 			},
 			name: function(name){
-				var s = setting.get(this);
+				var s = setting.get( this );
 				if( typeof name === "undefined" ){
 					return s.get( "name" );
 				} else {
@@ -502,25 +496,19 @@
 	var Position = function(){
 		// RGBA - Object
 		// Private static zone
-		var setting, Position, offset = 1024;
-		
-		// create setting
-		setting = new Settings({
-			value: 0
-		});
+		var Position, offset = 1024;
 		
 		// constructor
 		Position = function( x, y ){
-			var s = setting.create( this );
 
 			if( x && x.position ){
-				s.set( "value", x.getInt() );
+				this.value = x.getInt();
 			}else if( !isNaN(x) && !isNaN(y) ){
-				s.set( "value", Position.toInt(x, y) );			
+				this.value = Position.toInt(x, y);			
 			}else if( !isNaN(x) ){
-				s.set( "value", x );
+				this.value = x;
 			}else if( x.x !== undefined && x.y !== undefined ){
-				s.set( "value", Position.toInt(x.x, x.y) );
+				this.value = Position.toInt(x.x, x.y);
 			}
 		};
 		
@@ -557,37 +545,38 @@
 		
 		// public function and variables
 		Position.prototype = {
+			value: 0,
 			position: true,
 			x: function( i ){
-				var s = setting.get( this ), n;
+				var n;
 				if( i !== undefined && !isNaN(i) ){
 					if( i >= -1024 && i <= 1024 ){
-						n = s.get( "value" ) & 0x000FFF;
+						n = this.value & 0x000FFF;
 						n = n + ((i + 1024) << 12);
-						s.set( "value", n );
+						this.value = n;
 					} else {
 						console.warn( "[drawpad/object/Position.x] Position is out of bound [n1024-1024][%i]", i );
 					}
 				} else {
-					return ( ( s.get( "value" ) >> 12 ) & 0xFFF ) - 1024;
+					return ( ( this.value >> 12 ) & 0xFFF ) - 1024;
 				}
 			},
 			y: function( i ){
-				var s = setting.get( this ), n;
+				var n;
 				if( i !== undefined && !isNaN( i ) ){
 					if( i >= -1024 && i <= 1024 ){
-						n = s.get( "value" ) & 0xFFF000;
+						n = this.value & 0xFFF000;
 						n = n + (i + 1024);
-						s.set( "value", n );
+						this.value = n;
 					}else{
 						console.warn( "[drawpad/object/Position.y] Position is out of bound [n1024-1024][%i]", i );
 					}
 				} else {
-					return ((s.get( "value" )) & 0xFFF) - 1024;
+					return ((this.value) & 0xFFF) - 1024;
 				}
 			},
 			getInt: function(){
-				return setting.get( this ).get( "value" );
+				return this.value;
 			},
 			compare: function( pos ){
 				return Position.compare( this, pos );
@@ -662,7 +651,7 @@
 	Mode = undefined;
 
 	var pad = function(){
-		var pad = {}, setting, style;
+		var pad = {}, setting, style, draw = 0;
 		pad.extend = $.extend;
 		
 		/* Section: setting */
@@ -692,7 +681,7 @@
 		pad.extend({
 			setting: setting,
 			style: style
-		});		
+		});
 		/* End Section: setting */
 
 			
@@ -702,35 +691,28 @@
 			on: function( name, func ){
 				return ev.on( name, func );
 			},
+			regisEvent: function( name, sender, data ){
+				return ev.add( name, sender, data );
+			},
 			init: function( obj ){
 				var e = extend( {}, blankEvent );
 				
 				setTimeout( function(){
 					var msg;
-					console.groupCollapsed( "%c[drawpad.history.replay] Start init state.", "color: darkgreen; font-weight: bold" );
+					console.groupCollapsed( "%c[drawpad.history.replay] Start init state.", "color: darkgreen; font-weight: bold" );	
+					// Layer
 					if( typeof pad.layer !== "undefined" ){
-						pad.layer.root( obj.layer );
 						pad.layer.regisPad( pad );
-						pad.layer.create();
+						pad.layer.root( obj.layer );
 						console.log( "%c[drawpad.init] Init object.Layer Created.", "font-weight: bold; color: darkgreen" );
 					} else {
 						msg = "Init not successful, layer not loaded";
 						console.warn( "%c[drawpad.init] %s", "font-weight: bold; color: darkgreen", msg );
 						e.run( "error", pad, { message:  msg } );
+						return;
 					}
-					
-					if( typeof pad.mouseEvent !== "undefined" ){
-						// set Event
-						$(document).mousemove(this.mouseEvent.move);
-						$(window).mousedown(this.mouseEvent.down);
-						$(window).mouseup(this.mouseEvent.up);
-						console.log( "%cEvents have been set.", "font-weight: bold; color: darkgreen" );
-					} else {
-						msg = "Init not successful, mouseEvent not loaded";
-						console.warn( "%c[drawpad.init] %s", "font-weight: bold; color: darkgreen", msg );
-						e.run( "error", pad, { message: msg } );
-					}
-
+										
+					// Mode
 					if( typeof pad.modes !== "undefined" ){
 						pad.modes.regisPad( pad );
 						console.log( "%cModes node has been set.", "font-weight: bold; color: darkgreen" );
@@ -738,13 +720,54 @@
 						msg = "Init not successful, modes not loaded";
 						console.warn( "%c[drawpad.init] %s", "font-weight: bold; color: darkgreen", msg );
 						e.run( "error", pad, { message: msg } );
+						return;
 					}
+					
+					// Mode trigger start
+					setInterval(function(){
+						if(history.get( "replayState" )){
+							return false;
+						}
+						pad.modes.get( style.get( "draw" ) ).eventTrigger();
+					}, setting.get( "TIME_DELAY" ));
 
-					pad.layer.write( new object.Layer(0, "drawpad-write", setting.get( "CANVAS_WIDTH" ), setting.get( "CANVAS_HEIGHT" )) );
+					// History
+					if( typeof pad.history !== "undefined" ){
+						pad.history.regisPad( pad );
+						console.log( "%cHistory node has been set.", "font-weight: bold; color: darkgreen" );
+					} else {
+						msg = "Init not successful, History not loaded";
+						console.warn( "%c[drawpad.init] %s", "font-weight: bold; color: darkgreen", msg );
+						e.run( "error", pad, { message: msg } );
+						return;
+					}
+					
+					// Create first layer
+					pad.layer.create();
+					
+					// Write
+					var write = new object.Layer(0, "drawpad-write", setting.get( "CANVAS_WIDTH" ), setting.get( "CANVAS_HEIGHT" ));
+					pad.layer.write( write );
 					obj.write.append( pad.layer.write().getDOM( "$" ) );
 					console.log( "%c[drawpad.init] Pen layer has been set.", "font-weight: bold; color: darkgreen" );
 					pad.layer.index(0);
 					console.groupEnd();
+					
+					// Mouse
+					if( typeof pad.mouse !== "undefined" ){
+						// set Event
+						pad.mouse.regisPad( pad );
+						$(document).mousemove(pad.mouse.move);
+						$(window).mousedown(pad.mouse.down);
+						$(window).mouseup(pad.mouse.up);
+						console.log( "%cEvents have been set.", "font-weight: bold; color: darkgreen" );
+					} else {
+						msg = "Init not successful, mouse not loaded";
+						console.warn( "%c[drawpad.init] %s", "font-weight: bold; color: darkgreen", msg, this.mouse );
+						e.run( "error", pad, { message: msg } );
+						return;
+					}
+
 					e.run( "ok", pad, {} );
 				}, 1 );
 				
@@ -754,7 +777,7 @@
 			setStyle: function( obj, value ){
 				var context, rgba, rgbaCSS, alpha;
 				if( typeof value !== undefined ){
-					switch( String.toString(obj).toLowerCase() ){
+					switch( String(obj).toLowerCase() ){
 						case "rgba":
 							rgba = new object.RGBA( value );
 							rgbaCSS = rgba.getCSS();
@@ -765,16 +788,33 @@
 							context.fillStyle = rgbaCSS;
 							context.globalAlpha = alpha;
 							style.set( "rgba", rgba );
+							event.run( "colorChange", this, { rgba: rgba } );
 						break;
 						case "width":
 							context = pad.layer.write().getDOM( "context" );
 							context.lineWidth = value;
 							style.set( "width", value );
+							event.run( "widthChange", this, { width: value } );
 						break;
 						case "layer":
-							style.set( "layer", value );						
+							style.set( "layer", value );
+							event.run( "layerChange", this, { index: value, layer: pad.layer() } );
+						break;
+						case "mode":
+							if( pad.modes.get( value, true ) !== false ){
+								style.set( "draw", value );
+								draw = value;
+							}
+						break;
+						case "flow":	
+							if( value === true ){
+								$("#flowzone").show();
+							} else {
+								$("#flowzone").hide();							
+							}
 						break;
 					}
+					
 				} else {
 					for( var i in obj ){
 						pad.setStyle( i, obj[i] );
@@ -787,7 +827,11 @@
 				return style.get( name );
 			}
 		});
+		
+		return pad;
 	};
+	
+	pad = pad();
 
 	var layer = function(){
 		// Section - Layer
@@ -803,14 +847,23 @@
 			pad: false
 		});
 		setting = setting.create( this );
-
+		var ev = setting.event;
+		
+		ev.add( "create" );
+		ev.add( "remove" );
+		ev.add( "removeAll" );
+		ev.add( "indexChange" );
+		ev.add( "changeLayerSetting" );
+		ev.add( "clearLayer" );
+		ev.add( "reset" );
+		
 		// Defining function - not a constructor
 		layer = function( i ){
 			if( typeof i === "undefined" ){
-				i = layer.getLayer();
+				i = pad.layer.getLayer();
 			}
 			if( typeof i.layer === "undefined" ){
-				i = layer.getLayer(i);
+				i = pad.layer.getLayer(i);
 			}
 			return i;
 		};
@@ -819,6 +872,9 @@
 		
 		// Public static function and variable
 		extend(layer, {
+			on: function( name, func ){
+				return ev.on( name, func );
+			},
 			regisPad: function( padObject ){
 				if( setting.get( "pad" ) === false ){
 					setting.set( "pad", padObject );
@@ -837,22 +893,21 @@
 				if( setting.get( "write" ) === false && typeof e !== "undefined" ){
 					setting.set( "write", e );
 				}else{
-					setting.get( "write" );
+					return setting.get( "write" );
 				}
-				return this;
 			},
 			create: function(){
 				layer = new object.Layer(
 					setting.add( "indexCount" ), 
 					"drawpad", 
-					pad.setting.get( "CANVAS_WIDTH" ), 
-					pad.setting.get( "CANVAS_HEIGHT" )
+					pad.settings.get( "CANVAS_WIDTH" ), 
+					pad.settings.get( "CANVAS_HEIGHT" )
 				);
-				setting.root.append( layer.getDOM( "$" ) );
+				setting.get( "root" ).append( layer.getDOM( "$" ) );
 				
 				modes.get( "CreateLayer" ).eventSave();
 				setting.get( "data" ).push( layer );
-				this.callback.create(layer);
+				ev.run( "create", this, { layer: layer } );
 			},
 			remove: function( i ){
 				var dat = setting.get( "data" ), index;
@@ -862,6 +917,7 @@
 					}
 				} else {
 					if( typeof dat[ index ] !== "undefined" ){
+						ev.run( "remove", this, { layer: layer } );
 						dat[ index ].remove();
 						this.data.splice( index, 1 );
 					}
@@ -870,12 +926,13 @@
 			},
 			removeAll: function(){
 				$.each(this.data, function(i, o){
+					ev.run( "remove", this, { layer: o } );
 					o.DOM.$.remove();
 				});
 				this.data = [];
 				this.resetCount();
 				console.log("%c[drawpad.layer.removeAll] All layer was removed.", "font-weight: bold; color: darkorange");
-				this.callback.removeAll();
+				ev.run( "removeAll", this, {} );
 			},
 			index: function( i ){
 				if( typeof i === "undefined" ){
@@ -901,10 +958,12 @@
 						console.warn("[drawpad.layer.index] Error in style.layer.");
 					}
 					this.getLayer().changethis();
+					ev.run( "changeIndex", this, { layer: this.getLayer() } );
 				} else if( i.layer ) {
 					var x;
 					if( ( x = setting.get( "data" ).indexOf( i ) ) !== -1 ){
 						this.index( x );
+						ev.run( "changeIndex", this, { layer: this.getLayer() } );
 					} else {
 						return false;
 					}
@@ -932,11 +991,13 @@
 					oldvalue: old,
 					newvalue: setting.value,
 				};
-				pad.modes.ChangeLayerSetting.eventSave( data );
+				pad.modes.get( "ChangeLayerSetting" ).eventSave( data );
+				ev.run( "changeLayerSetting", this, data );
 			},
 			clear: function(){
 				$.each(this.data, function(i, o){
 					o.clear();
+					ev.run( "clear", this, { layer: o } );
 				});
 			},
 			defines: {
@@ -957,20 +1018,22 @@
 			},
 			resetCount: function(){
 				setting.set( "count", 0 );
+				ev.run( "reset", this, {} );
 			},
 		});
+		return layer;
 	};
 	
 	layer = layer();
 	/* End Section: Layer */
 
 
-
+	// Modes - core
 	var modes = function(){
 		var modes = {},		
 			setting = new object.Settings({
-			data: {}
-		});
+				data: {}
+			});
 		setting = setting.create( this );
 		
 		$.extend( modes, {
@@ -988,18 +1051,20 @@
 						setting.set( "data", modeObject.name, modeObject );
 						this.defineMode[ modeObject.name ] = index;
 						this.defineMode[ index ] = modeObject.name;
-						console.log( "%c[drawpad.modes.add] drawpad.object.Mode named [%s] was added to drawpad.modes[%d], drawpad.modes.%s", "font-weight: bold; color: darkred", modeObject.name, index, modeObject.name );
+						console.log( "%c[drawpad.modes.add] drawpad.object.Mode named [%s] was added to drawpad.modes/[%d], drawpad.modes/%s", "font-weight: bold; color: darkred", modeObject.name, index, modeObject.name );
 					}else{
-						console.warn( "[drawpad.mode.add] index [%d] OR name [%s] was already defined.", index, modeObject.name );
+						console.warn( "[drawpad.modes.add] index [%d] OR name [%s] was already defined.", index, modeObject.name );
 					}
 				} else {
-					console.warn( "[drawpad.modes.add] Invalid parameter type." );
+					console.error( "[drawpad.modes.add] Invalid parameter type." );
 					return false;
 				}
 			},
-			get: function(str){
+			get: function(str, bool){
 				if( setting.isset( "data", str ) ){
 					return setting.get( "data", str );
+				} else if( typeof bool !== "undefined" && bool ) {
+					return false;
 				} else {
 					return new object.Mode();
 				}
@@ -1008,35 +1073,32 @@
 			defines: {
 				drawType: 0,
 				time: 1,
-				axis: 2,
-				value: 2,
-				layer: 3
+				name: 2,
+				axis: 3,
+				value: 3,
+				layer: 4
 			}
 		});
+		
+		return modes;
 	};
 	
 	modes = modes();
 
 	var Line = function(){
-		var setting = new object.Settings({
-			lastMouseClickedState: false,
-			lastMouse: {x: 0, y: 0},
-			axis: [],
-			drawState: false,
-			lastSamePoint: 0,
-			previousDrawpad: false,
-			pad: false
-		});
-		setting = setting.create( "index" );
-		
-		var pad;
+		var pad = false, 
+			axis = [], 
+			lastSamePoint = 0,
+			lastMouse = {x: 0, y: 0},
+			lastMouseInState = false,
+			lastMouseClickedState = false,
+			drawState = false;	
 		
 		return object.Mode({
 			name: "Line",
 			thisIndex: 0,
 			regisPad: function( padObject ){
-				if( setting.get( "pad" ) === false ){
-					setting.set( "pad", padObject );
+				if( pad === false ){
 					pad = padObject;
 				}
 			},
@@ -1050,7 +1112,6 @@
 					return true;
 				}
 
-				pad.history.data.drawingState = true;
 				pad.layer.index( data[d.layer] );
 				pad.setStyle( data[ d.color ], data[ d.width ] );
 					
@@ -1083,7 +1144,7 @@
 					cNow.x( cNow.x() + 1 ); cNow.y( cNow.y() + 1 );
 				}
 				
-				var context = this.pad.layer.write().getDOM( "context" );
+				var context = pad.layer.write().getDOM( "context" );
 				context.beginPath();
 				context.lineJoin = "round";
 				context.lineCap = "round";
@@ -1093,10 +1154,9 @@
 				context.stroke();
 			},
 			eventTrigger: function(){
-				var s = setting;
-				var me = pad.mouseEvent;
+				var me = pad.mouse;
 				// If click state change
-				if ( s.get( "lastMouseClickedState" ) !== me.mouseClicked ){
+				if ( lastMouseClickedState !== me.mouseClicked ){
 					if ( me.mouseInner ){
 						if ( me.mouseClicked ){
 							this.eventStart();
@@ -1109,77 +1169,75 @@
 						}
 					}
 				}else if( me.mouseClicked && me.mouseIn ){
-					if( s.get( "lastMouseInState" ) !== me.mouseIn ){
+					if( lastMouseInState !== me.mouseIn ){
 						if( me.mouseIn ){ 
 							this.eventStart();
 						} else {
 							this.eventStop();
 						}
-					} else if( s.get( "drawState" ) ){
+					} else if( drawState ) {
 						this.eventAdd();
 					}
 				}else if( !me.mouseIn ){
 					this.eventStop();
 				}
 				
-				s.set( "lastMouseClickedState", me.mouseClicked );
-				s.set( "lastMouseInState", me.mouseIn );
 				
-				if ( s.get( "drawState" ) ){
+				lastMouseClickedState = me.mouseClicked;
+				lastMouseInState = me.mouseIn;
+				
+				if ( me.mouseClicked ){
 					pad.setStyle( "flow", true );
 				} else {
 					pad.setStyle( "flow", false );
 				}
 			},
 			eventStart: function(){
-				var s = setting,
-					me = pad.mouseEvent;
+				var me = pad.mouse;
 
-				this.data.drawState = true;
+				drawState = true;
 
-				var pos = new pad.object.Position( me.mouse.pos ),
+				var pos = new object.Position( me.mouse.pos ),
 					a = [];
 				a.push( pos.getInt() );
-				s.set( "axis", a );
-				s.set( "lastMouse", pos );
+				axis = a;
+				lastMouse = pos;
 				
 				pad.history.countTime();
 			},
 			eventAdd: function(){
-				var s = setting,
-					me = pad.mouseEvent,
-					pos = new object.Position( me.pos );
+				var me = pad.mouse,
+					pos = new object.Position( me.mouse.pos );
 					
-				if ( pos.compare( s.get( "lastMouse" ) ) ){
-					s.add( "lastSamePoint" );
+				if ( pos.compare( lastMouse ) ){
+					lastSamePoint++;
 				} else {
-					s.add( "lastSamePoint", 0 );
+					lastSamePoint = 0;
 				}
 				
-				if(s.get( "lastSamePoint" ) > pad.settings.get( "SAMEPOINT_LIMIT" )){
+				console.log( lastSamePoint );
+				if( lastSamePoint > pad.settings.get( "SAMEPOINT_LIMIT" )){
 					return false;
 				}
 
 				// Add to Pad
-				this.draw( s.get( "lastMouse" ), pos );
+				this.draw( lastMouse, pos );
 				
 				// Add to historyObject
-				s.get( "axis" ).push( pos.getInt() );
-				s.set( "lastMouse", pos );
+				axis.push( pos.getInt() );
+				lastMouse = pos;
 				
 				// count Time
 				pad.history.countTime();
 			},
 			eventStop: function(){
-				var s = setting;
-
-				if ( s.get( "drawState" ) ){
-					s.set( "drawState", false );
+				if ( drawState ){
+					drawState = false;
 				} else {
 					return false;
 				}
 				
-				s.set( "lastSamePoint", 0 );
+				lastSamePoint = 0;
 				this.eventAdd();
 				this.eventSave();
 								
@@ -1188,14 +1246,12 @@
 				$("#value_msize").html((history.getMsgPackSize() / 1024).toFixed(2) + " KB");
 			},
 			eventSave: function(){
-				var s = setting;
-				var pad = s.get( "pad" );
 				var d = this.defines;
 
 				var data = {};
 				data[d.drawType] = this.thisIndex;
-				data[d.time]     = pad.history.getTime() - s.get( "data", "axis" ).length;
-				data[d.axis]     = s.get( "axis" );
+				data[d.time]     = pad.history.getTimeStep() - axis.length;
+				data[d.axis]     = axis;
 				data[d.layer]    = pad.layer.index();
 
 				// count Event
@@ -1203,19 +1259,19 @@
 				
 				// add Event
 				pad.history.addEvent( data );
-				var dThis = this;
 				
 				// add History
 				pad.history.addHistory({
 					data: {
-						img: pad.layer.getDataURI,
+						img: pad.layer.getLayer().getDOM("element").toDataURL(),
 						mode: this.thisIndex,
+						line: true,
 						layer: pad.layer()
 					},
 					undo: function( history, callback ){
 						pad.layer.index( this.data.layer );
-						while( history.index() > 0 &&
-							history.back().data.mode !== dThis.thisIndex &&
+						while( history.back() !== false &&
+							history.now().data.line !== true &&
 							history.now().data.layer !== this.data.layer 
 						){}
 						
@@ -1244,30 +1300,24 @@
 	
 	Line = Line();
 
+	// Modes - CreateLayer
 	var CreateLayer = function(){
-		var setting = new object.Settings({
-			pad: false
-		});
-		setting = setting.create( "pad" );
-		var pad;
-		
-		object.Mode({
+		var pad = false;
+		return object.Mode({
 			name: "CreateLayer",
 			thisIndex: 1,
 			regisPad: function( padObject ){
-				if( setting.get( "pad" ) === false ){
-					setting.set( "pad", padObject );
+				if( pad === false ){
 					pad = padObject;
 				}
 			},
 			play: function( data, callback ){
-				var dThis = this;
 				if( !this.dataCheck( data ) ){
 					return false;
 				}
 				pad.layer.create();
 				if(callback){ 
-					callback( dThis );
+					callback( this );
 				}
 			},
 			// EventTrigger - needs to defines.
@@ -1289,13 +1339,13 @@
 					data: {
 						layer: pad.layer.getLayer()
 					},
-					undo: function( callback ){
+					undo: function( history, callback ){
 						pad.layer.remove( this.data.layer );
 						if( typeof callback === "function" ){
 							callback();
 						}
 					},
-					redo: function( callback ){
+					redo: function( history, callback ){
 						pad.layer.create();
 						if( typeof callback === "function" ){
 							callback();
@@ -1309,27 +1359,21 @@
 	CreateLayer = CreateLayer();
 
 	var ChangeLayerSetting = function(){
-		var setting = new object.Settings({
-			pad: false,
-			data: []
-		});
-		setting = setting.create( "pad" );
-		
-		var pad;
+		var pad = false;
 		return object.Mode({
 			name: "ChangeLayerSetting",
 			regisPad: function( padObject ){
-				if( setting.get( "pad" ) === false ){
-					setting.set( "pad", padObject );
+				if( pad === false ){
 					pad = padObject;
 				}
 			},
 			thisIndex: 2,
 			play: function( data, callback ){
-				var d = this.define, dThis = this;
+				var d = this.define;
 				if( !this.dataCheck(data) ){
 					return false;
 				}
+				
 				if( !isNaN( data[d.axis] ) ){				
 					pad.layer.set(
 						data[d.layer],
@@ -1343,7 +1387,7 @@
 				}
 				
 				if( callback ){
-					callback( dThis );
+					callback( this );
 				}
 			},
 			eventTrigger: function(){},
@@ -1369,19 +1413,27 @@
 							layer: pad.layer() 
 						} 
 					),
-					undo: function(){
+					undo: function( history, callback ){
 						pad.layer.index( this.data.layer );
 						pad.layer.set({
 							mode: this.data.mode,
 							value: this.data.oldvalue 
 						});
+
+						if( typeof callback === "function" ){
+							callback();
+						}
 					},
-					redo: function(){
+					redo: function( history, callback ){
 						pad.layer.index( this.data.layer );
 						pad.layer.set({
 							mode: this.data.mode, 
 							value: this.data.newvalue 
 						});
+						
+						if( typeof callback === "function" ){
+							callback();
+						}
 					}
 				});
 			}
@@ -1390,19 +1442,342 @@
 	
 	ChangeLayerSetting = ChangeLayerSetting();
 
+	// Modes - ChangeStyle
+	var ChangeStyle = function(){
+		var setting = new object.Settings({
+			pad: false
+		});
+		setting = setting.create( "pad" );
+		var pad = false;
+		
+		return object.Mode({
+			name: "ChangeStyle",
+			thisIndex: 3,
+			regisPad: function( padObject ){
+				if( pad === false ){
+					pad = padObject;
+				}
+			},
+			play: function( data, callback ){
+				if( !this.dataCheck( data ) ){
+					return false;
+				}
+				var d = this.defines;
+				pad.setStyle( data[d.name], data[d.value] );
+				if(callback){
+					callback( this );
+				}
+			},
+			// EventTrigger - needs to defines.
+			eventTrigger: function(){},
+			eventSave: function( dataObject ){
+				var data = {};
+				data[this.defines.drawType] = this.thisIndex;
+				data[this.defines.name]     = dataObject.name,
+				data[this.defines.value]     = dataObject.style,
+				data[this.defines.time]     = pad.history.getTimeStep(),
+				
+				// count Time and Event
+				pad.history.countTime();
+				pad.history.countEvent();
+				
+				// add Event
+				pad.history.addEvent( data );
+				
+				// add History
+				pad.history.addHistory({
+					data: {
+						layer: pad.layer.getLayer()
+					},
+					undo: function( history, callback ){
+						if( typeof callback === "function" ){
+							callback();
+						}
+					},
+					redo: function( history, callback ){
+						if( typeof callback === "function" ){
+							callback();
+						}
+					}
+				});
+			}
+		});
+	};
+	
+	ChangeStyle = ChangeStyle();
+
 	var mode = function(){
 		modes.add(0, Line);
 		modes.add(1, CreateLayer);
-		modes.add(2, ChangeLayerSetting);		
+		modes.add(2, ChangeLayerSetting);
+		modes.add(3, ChangeStyle);
 		return modes;
 	};
 	
 	modes = mode();
+	
+	// Set as undefined
 	mode = undefined;
+	Line = undefined;
+	CreateLayer = undefined;
+	ChangeLayerSetting = undefined;
+	ChangeStyle = undefined;
+
+	var mouse = function(){
+		var setting = new object.Settings({
+				pad: false
+			}),
+			pad = false;
+			
+		setting = setting.create( "mouse" );
+		var mouse;
+		
+		mouse = {
+			mouseClicked: false,
+			mouseIn: false,
+			mouseInner: false,
+			regisPad: function( padObject ){
+				if( pad === false ){
+					pad = padObject;
+				}
+			},
+			mouse: {
+				pos: { x: 0, y: 0 }
+			},
+			down: function ( e ){
+				if( e.which === 1 ){
+					mouse.mouseClicked = true;
+				}
+			},
+			up: function ( e ){
+				if( e.which === 1 ){
+					mouse.mouseClicked = false;
+				}
+			},
+			move: function ( e ){
+				var off = pad.layer.write().getDOM( "$" ).offset();
+				
+				mouse.mouse.pos.x = e.pageX - off.left;
+				mouse.mouse.pos.y = e.pageY - off.top;				
+				mouse.overcheck();
+			},
+			overcheck: function (){
+				if( mouse.mouse.pos.x >= - pad.settings.get( "CANVAS_EVENTOFFSET" ) &&
+					mouse.mouse.pos.x <= pad.settings.get( "CANVAS_WIDTH" ) + pad.settings.get( "CANVAS_EVENTOFFSET" ) &&
+					mouse.mouse.pos.y >= - pad.settings.get( "CANVAS_EVENTOFFSET" ) &&
+					mouse.mouse.pos.y <= pad.settings.get( "CANVAS_HEIGHT" ) + pad.settings.get( "CANVAS_EVENTOFFSET" ) ){
+					mouse.mouseIn = true;
+				} else {
+					mouse.mouseIn = false;
+				}
+
+				if( mouse.mouse.pos.x >= 0 &&
+					mouse.mouse.pos.x <= pad.settings.get( "CANVAS_WIDTH" ) &&
+					mouse.mouse.pos.y >= 0 &&
+					mouse.mouse.pos.y <= pad.settings.get( "CANVAS_HEIGHT" ) ){
+					mouse.mouseInner = true;
+				} else {
+					mouse.mouseInner = false;
+				}
+			}
+		};
+		return mouse;
+	};
+	
+	mouse = mouse();
+
+		
+	var history = function(){
+		var EventCount = -1,
+			TimeCount = -1,
+			historyEvent = [],
+			History = [],
+			pad = false,
+			drawingState = false,
+			replayState = false,
+			replayLastState = false;
+			
+		var history = {
+			get: function( str ){
+				if( str === "replayState" ){
+					return replayState;
+				}
+			},
+			regisPad: function( padObject ){
+				if( pad === false ){
+					pad = padObject;
+				}
+			},
+			undo: function(){
+				if(EventCount > 0 && History[EventCount - 1]){
+					var EventIndex = --EventCount;
+					var history = {
+						back: function(){
+							if ( EventIndex > 0 ){
+								EventIndex--;
+								return this.now();
+							} else {
+								return false;
+							}
+						},
+						now: function(){
+							return historyEvent[EventIndex];
+						},
+						index: function(){
+							return EventIndex;
+						}
+					};
+					History[EventCount].undo( history );
+				}
+			},
+			redo: function (){
+				if(EventCount < History.length){
+					var EventIndex = ++EventCount;
+					var history = {
+						forward: function(){
+							if ( EventIndex > 0 ){
+								EventIndex++;
+								return this.now();
+							} else {
+								return false;
+							}
+						},
+						now: function(){
+							return historyEvent[EventIndex];
+						},
+						index: function(){
+							return EventIndex;
+						}
+					};
+					History[EventCount].redo( history );
+				}
+			},
+			clearRedo: function(){
+				History.length = EventCount;
+				historyEvent.length = EventCount + 1;
+			},
+			clearHistory: function(){
+				History = [];
+				historyEvent = [];
+			},
+			countTime: function(){
+				TimeCount++;
+			},
+			getTimeStep: function(){
+				return TimeCount;			
+			},
+			countEvent: function(){
+				EventCount++;
+			},
+			addHistory: function( data ){
+				if( typeof data.undo !== "undefined" &&
+					typeof data.redo !== "undefined" &&
+					typeof data.data !== "undefined"){
+					History.push( data );
+				}
+			},
+			addEvent: function( data ){
+				historyEvent.push( data );
+			},
+			replay: function(){
+				if( replayState === true ){
+					return false;
+				}
+				replayState = false;
+				
+				console.groupCollapsed("%c[drawpad.history.replay] Start replay state.", "color: darkgreen; font-weight: bold");
+				
+				// Clear redo before save history
+				this.clearRedo();
+				
+				var h = historyEvent;
+				historyEvent = [];
+
+				// Clear all session
+				this.clearHistory();
+				pad.layer.removeAll();
+				pad.layer.write().clear();
+				
+				var timeIndex = 0;
+				var eventIndex = 0;
+				var endLength = h.length;
+				var recall = {
+					call: false
+				};
+				
+				function callerback(){
+					drawingState = false;
+					if( replayLastState ){
+						replayLastState = false;
+						replayState = false;
+						
+						console.debug("[drawpad.history.replay] index = [%s], frame = [%s] [%ss:%sms], countPerFrame = [%s], mode = [%s]", 
+							(" END").slice(-4),
+							("     " + timeIndex).slice(-5), 
+							("000" + Math.floor(timeIndex * pad.settings.TIME_DELAY / 1000)).slice(-3), 
+							("   " + Math.floor(timeIndex * pad.settings.TIME_DELAY % 1000)).slice(-3), 
+							("      " + pad.settings.replaySpeed).slice(-6),
+							"LAST"
+						);
+						console.log("%c[drawpad.history.replay] End replay state.", "color: darkgreen; font-weight: bold");
+						console.groupEnd();
+					}
+					if(recall.call){
+						recall.call();
+					}
+				}
+				
+				function timeout(){
+					if( recall.call ){
+						recall.call = false;
+					}
+					while(h[eventIndex][pad.modes.define.time] <= Math.floor(timeIndex)){
+						if( drawingState ){
+							recall.call = timeout;
+							return;
+						}else{
+							console.debug("[drawpad.history.replay] index = [%s], frame = [%s] [%ss:%sms], countPerFrame = [%s], mode = [%s]", 
+								("    " + eventIndex).slice(-4),
+								("     " + timeIndex).slice(-5), 
+								("000" + Math.floor(timeIndex * pad.settings.TIME_DELAY / 1000)).slice(-3), 
+								("   " + Math.floor(timeIndex * pad.settings.TIME_DELAY % 1000)).slice(-3), 
+								("      " + pad.settings.replaySpeed).slice(-6),
+								pad.modes[h[eventIndex][pad.modes.define.drawType]].name
+							);
+							drawingState = true;
+							pad.modes[h[eventIndex][pad.modes.define.drawType]]
+								.play(h[eventIndex], callerback);
+							eventIndex++;
+							if(eventIndex >= endLength){
+								replayLastState = true;
+								historyEvent = h;
+								return true;
+							}
+						}
+					}
+					timeIndex += pad.settings.get( "replaySpeed" );
+					setTimeout(timeout, 1);
+				}
+				timeout();
+			},
+			getSize: function(){
+				return JSON.stringify( historyEvent ).length;
+			},
+			getMsgPackSize: function(){
+				return msgpack.pack( historyEvent ).length;
+			}
+		};
+		
+		return history;
+	};
+	
+	history = history();
 
 	pad.extend({
 		layer: layer,
-		modes: modes
+		modes: modes,
+		mouse: mouse,
+		history: history
 	});
 
 	var drawpad = {},
@@ -1427,7 +1802,7 @@
 				return _error.length === 0;
 			},
 			call: function( callback ){
-				callback( get );
+				callback( { get: get } );
 			}
 		},
 		error: {
@@ -1452,8 +1827,7 @@
 		});
 		return this;
 	};
+	
+	window.drawpad = drawpad;
 
-	require(["drawpad"], function(drawpad){
-		window.drawpad = drawpad;
-	});
 }));

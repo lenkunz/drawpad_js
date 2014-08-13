@@ -23,7 +23,7 @@ define([
 				return _error.length === 0;
 			},
 			call: function( callback ){
-				callback( get );
+				callback( { get: get } );
 			}
 		},
 		error: {
@@ -48,6 +48,8 @@ define([
 		});
 		return this;
 	};
+	
+	window.drawpad = drawpad;
 	
 	return drawpad;
 });

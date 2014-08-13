@@ -1,27 +1,30 @@
 define(function(){
 	var Settings = function(){
-		var Settings = {};
+		var Settings = {},
+			intCount = 0,
+			data = {};
 		
 		Settings = function( obj ){
 			if( obj ){
+				this.index = intCount;
 				this.set(obj);
-				data[this] = {};
+				data[intCount++] = {};
 			}
 		};
 		
-		var data = {};
 		
 		Settings.prototype = {
 			ex: {},
+			index: -1,
 			get: function( obj ){
-				if(typeof obj !== "undefined" && typeof this[obj] !== "undefined"){
-					return data[ this ][ obj ];
+				if(typeof obj !== "undefined" && typeof data[ this.index ][obj] !== "undefined"){
+					return data[ this.index ][ obj ];
 				}
 				return 0;
 			},
 			create: function( obj ){
-				data[ this ][ obj ] = $.extend({}, this.ex);
-				return data[ this ][ obj ];
+				data[ this.index ][ obj ] = $.extend({}, this.ex);
+				return data[ this.index ][ obj ];
 			},
 			set: function( obj ){
 				var event, set, add, get, isset;
@@ -32,7 +35,7 @@ define(function(){
 						if( typeof name === "undefined" ){
 							return false;
 						}
-						if( typeof this.event.data[name] === "undefined" ){
+						if( typeof this.data[name] === "undefined" ){
 							this.data[name] = [];
 						}
 						if( typeof call === "function" ){
@@ -91,8 +94,8 @@ define(function(){
 					if( typeof a !== "undefined"){
 						if( typeof b !== "undefined" ){
 							if( arguments.length > 2 ){
-								var referer = this.data[ a ][ b ], i;
-								for( i = 2; i < arguments.length - 2; i++ ){
+								var referer = this.data, i;
+								for( i = 0; i < arguments.length - 2; i++ ){
 									referer = referer[ arguments[ i ] ];
 								}
 								referer[ arguments[ i ] ] = arguments[ i + 1 ];
@@ -132,8 +135,8 @@ define(function(){
 				};
 				
 				isset = function( name ){
-					if( typeof name !== "undefined" && typeof this.data[ name ] !== "undefined" ){
-						var value, v;
+					if( typeof name !== "undefined" ){
+						var value = this.data, v;
 
 						for( var i in arguments ){
 							v = arguments[i];

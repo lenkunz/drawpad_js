@@ -9,7 +9,7 @@
  * Date: @DATE
  */
  
-(function( w, $, require, define, func ){
+(function( w, $, func ){
 	var error = [], msg;
 	if( typeof $ === "undefined" || typeof console === "undefined" ){
 		msg = "[drawpad] drawpad require jQuery to run, please set-it-up on your page.";
@@ -22,15 +22,7 @@
 		error.push( msg );
 		console.warn( msg );
 	}
+		
+	func( w, w.document, $, $.extend, error);
 	
-	if( typeof require === "undefined" && typeof define === "undefined" ){
-		require = function(){};
-
-		msg = "[drawpad] drawpad require RequireJS to run, please set-it-up on your page.";
-		error.push( msg );
-		console.warn( msg );
-	}
-	
-	func( w, w.document, $, $.extend, error, require );
-	
-}(typeof window !== "undefined" ? window : this, jQuery, require, define, function( window, document, $, extend, _error, require ){
+}( typeof window !== "undefined" ? window : this, jQuery, function( window, document, $, extend, _error ){

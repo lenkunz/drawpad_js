@@ -2,27 +2,21 @@ define([
 	"../object"
 ], function( object ){
 	var ChangeLayerSetting = function(){
-		var setting = new object.Settings({
-			pad: false,
-			data: []
-		});
-		setting = setting.create( "pad" );
-		
-		var pad;
+		var pad = false;
 		return object.Mode({
 			name: "ChangeLayerSetting",
 			regisPad: function( padObject ){
-				if( setting.get( "pad" ) === false ){
-					setting.set( "pad", padObject );
+				if( pad === false ){
 					pad = padObject;
 				}
 			},
 			thisIndex: 2,
 			play: function( data, callback ){
-				var d = this.define, dThis = this;
+				var d = this.define;
 				if( !this.dataCheck(data) ){
 					return false;
 				}
+				
 				if( !isNaN( data[d.axis] ) ){				
 					pad.layer.set(
 						data[d.layer],
@@ -36,7 +30,7 @@ define([
 				}
 				
 				if( callback ){
-					callback( dThis );
+					callback( this );
 				}
 			},
 			eventTrigger: function(){},
@@ -62,19 +56,27 @@ define([
 							layer: pad.layer() 
 						} 
 					),
-					undo: function(){
+					undo: function( history, callback ){
 						pad.layer.index( this.data.layer );
 						pad.layer.set({
 							mode: this.data.mode,
 							value: this.data.oldvalue 
 						});
+
+						if( typeof callback === "function" ){
+							callback();
+						}
 					},
-					redo: function(){
+					redo: function( history, callback ){
 						pad.layer.index( this.data.layer );
 						pad.layer.set({
 							mode: this.data.mode, 
 							value: this.data.newvalue 
 						});
+						
+						if( typeof callback === "function" ){
+							callback();
+						}
 					}
 				});
 			}

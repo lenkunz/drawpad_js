@@ -1,12 +1,17 @@
 define([
 	"../object"
 ], function(object){
-	// Modes - CreateLayer
-	var CreateLayer = function(){
+	// Modes - ChangeStyle
+	var ChangeStyle = function(){
+		var setting = new object.Settings({
+			pad: false
+		});
+		setting = setting.create( "pad" );
 		var pad = false;
+		
 		return object.Mode({
-			name: "CreateLayer",
-			thisIndex: 1,
+			name: "ChangeStyle",
+			thisIndex: 3,
 			regisPad: function( padObject ){
 				if( pad === false ){
 					pad = padObject;
@@ -16,16 +21,19 @@ define([
 				if( !this.dataCheck( data ) ){
 					return false;
 				}
-				pad.layer.create();
-				if(callback){ 
+				var d = this.defines;
+				pad.setStyle( data[d.name], data[d.value] );
+				if(callback){
 					callback( this );
 				}
 			},
 			// EventTrigger - needs to defines.
 			eventTrigger: function(){},
-			eventSave: function(){
+			eventSave: function( dataObject ){
 				var data = {};
 				data[this.defines.drawType] = this.thisIndex;
+				data[this.defines.name]     = dataObject.name,
+				data[this.defines.value]     = dataObject.style,
 				data[this.defines.time]     = pad.history.getTimeStep(),
 				
 				// count Time and Event
@@ -41,23 +49,21 @@ define([
 						layer: pad.layer.getLayer()
 					},
 					undo: function( history, callback ){
-						pad.layer.remove( this.data.layer );
 						if( typeof callback === "function" ){
 							callback();
 						}
 					},
 					redo: function( history, callback ){
-						pad.layer.create();
 						if( typeof callback === "function" ){
 							callback();
-						}						
+						}
 					}
 				});
 			}
 		});
 	};
 	
-	CreateLayer = CreateLayer();
+	ChangeStyle = ChangeStyle();
 	
-	return CreateLayer;
+	return ChangeStyle;
 });

@@ -23,7 +23,6 @@ define([
 				}
 			});
 			
-			
 		// constructor
 		var Layer = function(index, className, width, height){
 			// init
@@ -39,7 +38,7 @@ define([
 			
 			// init DOM
 			var canvas = $("<canvas></canvas>").attr({
-				"id": className + "_" + this.id,
+				"id": className + "_" + index,
 				"width": width,
 				"height": height
 			}).addClass(className);
@@ -133,7 +132,7 @@ define([
 				return this;
 			},
 			name: function(name){
-				var s = setting.get(this);
+				var s = setting.get( this );
 				if( typeof name === "undefined" ){
 					return s.get( "name" );
 				} else {
