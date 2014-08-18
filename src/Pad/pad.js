@@ -3,13 +3,15 @@ define([
 	"./layer",
 	"./modes",
 	"./event/mouse",
-	"./history"
-], function(pad, layer, modes, mouse, history){
+	"./history",
+	"./object"
+], function(pad, layer, modes, mouse, history, object){
 	pad.extend({
 		layer: layer,
 		modes: modes,
 		mouse: mouse,
-		history: history
+		history: history,
+		object: object
 	});
 	
 	return pad;

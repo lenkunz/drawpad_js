@@ -7,7 +7,7 @@ define([
 			setting = new object.Settings({
 				data: {}
 			});
-		setting = setting.create( this );
+		setting = setting.create( 0 );
 		
 		$.extend( modes, {
 			regisPad: function( pad ){

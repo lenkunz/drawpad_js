@@ -1,3 +1,8 @@
-define([], function(){
-	return {};
+define([
+	"./core",
+], function(padui){
+	padui.extend({
+	});
+	
+	return padui;
 });

@@ -6,7 +6,7 @@
  * Released under the MIT license
  * http://lenkyun.tk/drawpad/license
  *
- * Date: 2014-08-13T16:54Z
+ * Date: 2014-08-18T12:37Z
  */
  
 (function( w, $, func ){
@@ -34,7 +34,7 @@
 		
 		Settings = function( obj ){
 			if( obj ){
-				this.index = intCount;
+				this.indexer = intCount;
 				this.set(obj);
 				data[intCount++] = {};
 			}
@@ -43,16 +43,16 @@
 		
 		Settings.prototype = {
 			ex: {},
-			index: -1,
+			indexer: -1,
 			get: function( obj ){
-				if(typeof obj !== "undefined" && typeof data[ this.index ][obj] !== "undefined"){
-					return data[ this.index ][ obj ];
+				if(typeof obj !== "undefined" && typeof data[ this.indexer ][obj] !== "undefined"){
+					return data[ this.indexer ][ obj ];
 				}
 				return 0;
 			},
 			create: function( obj ){
-				data[ this.index ][ obj ] = $.extend({}, this.ex);
-				return data[ this.index ][ obj ];
+				data[ this.indexer ][ obj ] = $.extend( true, {}, this.ex );
+				return data[ this.indexer ][ obj ];
 			},
 			set: function( obj ){
 				var event, set, add, get, isset;
@@ -233,10 +233,14 @@
 				}
 			});
 			
+		var indexCount = 0;
+			
 		// constructor
 		var Layer = function(index, className, width, height){
 			// init
-			var s = setting.create(this);
+			this.indexer = indexCount;
+			var s = setting.create( indexCount++ );
+			this.s = setting;
 			s.set({
 				id: index,
 				index: index,
@@ -281,18 +285,19 @@
 		// public functions and variable
 		Layer.prototype = {
 			layer: true,
+			indexer: -1,
 			on: function( name, func ){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				if( s.event.has( name ) ){
 					s.event.add( name, func );
 				}
 			},
 			listEvent: function(){
-				return setting.event.list();
+				return setting.get( this.indexer ).event.list();
 			},
 			// Get element
 			getDOM: function( name ){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				if( s.isset( "DOM", name ) ){
 					return s.get( "DOM", name );
 				} else {
@@ -301,20 +306,19 @@
 			},
 			// Clear canvas
 			clear: function(){
-				var s = setting.get( this ); // Settings
+				var s = setting.get( this.indexer ); // Settings
 				if( s.isset( "DOM", "context" ) ){
-					s.get( "DOM", "context" ).clearRect( 0, 0, s.width, s.height );
+					s.get( "DOM", "context" ).clearRect( 0, 0, s.get( "width" ), s.get( "height" ) );
 				}
 				if( s.isset( "DOM", "contextPad" ) ){
-					s.get( "DOM", "contextPad" ).clearRect( 0, 0, s.width, s.height );
+					s.get( "DOM", "contextPad" ).clearRect( 0, 0, s.get( "width" ), s.get( "height" ) );
 				}
 
-				this.clearPreview();
 				s.event.run( "clear", this, {});
 				return this;
 			},
 			order: function( i ){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				if( typeof i === "undefined" ){
 					return s.get( "index" );
 				}else if( i >= 0 && i < 2000 ){
@@ -327,7 +331,7 @@
 				return this;
 			},
 			opacity: function( o ){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				if( typeof o === undefined ){
 					return s.get( "opacity" );
 				}else if( o >= 0 && o <= 255 ){
@@ -342,7 +346,7 @@
 				return this;
 			},
 			name: function(name){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				if( typeof name === "undefined" ){
 					return s.get( "name" );
 				} else {
@@ -352,16 +356,16 @@
 				}
 			},
 			getDataURL: function(){
-				return setting.get( this ).get( "DOM", "element" ).getDataURL();
+				return setting.get( this.indexer ).get( "DOM", "element" ).getDataURL();
 			},
 			remove: function(){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				s.get( "DOM", "$" ).remove();
 				$( s.get( "DOM", "previewPad" ) ).remove();
 				s.event.run("remove", this, { layer: this });
 			},
 			changethis: function(){
-				setting.get( this ).event.run("changethis", this, { layer: this });				
+				setting.get( this.indexer ).event.run("changethis", this, { layer: this });				
 			}
 		};
 		
@@ -373,27 +377,22 @@
 	var RGBA = function(){
 		// RGBA - Object
 		// Private static zone
-		var setting, RGBA;
-		
-		// create settings
-		setting = new Settings({
-			value: 255
-		});
-		
+		var RGBA;
+				
 		// constructor
 		RGBA = function( r, g, b, a ){
-			var s = setting.create( this );
 			if ( r && r.rgba ){
-				s.set( "value", r.getInt() );
+				this.value = r.getInt();
 			} else if ( typeof r !== "undefined" && typeof g !== "undefined" && typeof b !== "undefined" && typeof a !== "undefined" ){
-				s.set( "value", RGBA.toInt(r, g, b, a) );
+				this.value = RGBA.toInt(r, g, b, a);
 			} else if ( !isNaN(r) ){
-				s.set( "value", r );
+				this.value = r;
 			}
 		};
 		
 		// static
 		$.extend(RGBA, {
+			value: 255,
 			toInt: function(r, g, b, a){
 				if (r.rgba){
 					return r.color();
@@ -425,66 +424,62 @@
 		RGBA.prototype = {
 			rgba: true,
 			red: function( i ){
-				var s = setting.get( this );
 				if ( i !== undefined && !isNaN(i) ){
 					if ( i >= 0 && i <= 255 ){
-						var n = s.get( "value" ) & 0x00FFFFFF;
+						var n = this.value & 0x00FFFFFF;
 						n = n + ( i << 24 );
-						s.set( "value", n );
+						this.value = n;
 					} else {
 						console.warn( "[drawpad/object/RGBA.red] Color is out of bound [0-255][%i]", i );
 					}
 				} else {
-					return ( s.get( "value" ) >> 24 ) & 0xFF;
+					return ( this.value >> 24 ) & 0xFF;
 				}
 			},
 			green: function( i ){
-				var s = setting.get( this );
 				if ( i !== undefined && !isNaN(i) ){
 					if( i >= 0 && i <= 255 ){
-						var n = s.get( "value" ) & 0xFF00FFFF;
+						var n = this.value & 0xFF00FFFF;
 						n = n + ( i << 16 );
-						s.set( "value", n );
+						this.value = n;
 					} else {
 						console.warn( "[drawpad/object/RGBA.green] Color is out of bound [0-255][%i]", i );
 					}
 				} else {
-					return ( s.get( "value" ) >> 16 ) & 0xFF;
+					return ( this.value >> 16 ) & 0xFF;
 				}
 			},
 			blue: function( i ){
-				var s = setting.get( this );
 				if ( i !== undefined && !isNaN(i) ){
 					if( i >= 0 && i <= 255 ){
-						var n = s.get( "value" ) & 0xFFFF00FF;
+						var n = this.value & 0xFFFF00FF;
 						n = n + ( i << 8 );
-						s.set( "value", n );
+						this.value = n;
 					} else {
 						console.warn( "[drawpad/object/RGBA.blue] Color is out of bound [0-255][%i]", i );
 					}
 				} else {
-					return ( s.get( "value" ) >> 8 ) & 0xFF;
+					return ( this.value >> 8 ) & 0xFF;
 				}
 			},
 			alpha: function( i ){
-				var s = setting.get( this );
 				if( i !== undefined && !isNaN(i) ){
 					if( i >= 0 && i <= 255 ){
-						var n = s.get( "value" ) & 0xFFFFFF00;
+						var n = this.value & 0xFFFFFF00;
 						n = n + i;
-						s.set( "value", n );
+						this.value = n;
 					} else {
 						console.warn( "[drawpad/object/RGBA.alpha] Alpha level is out of bound [0-255][%i]", i );
 					}
 				} else {
-					return s.get( "value" ) & 0xFF;
+					return this.value & 0xFF;
 				}
 			},
 			getCSS: function(){
-				return setting.get( this ).get( "value" );
+				return this.value;
 			},
 			getInt: function(){
-				return setting.get( this ).get( "value" );
+				return this.value;
 			}
 		};
 		
@@ -665,18 +660,19 @@
 			LAYERPAD_WIDTH: 150,
 			SAMEPOINT_LIMIT: 1,	
 		});
-		setting = setting.create( pad );
+		setting = setting.create( "0" );
 		var ev = setting.event,
 			blankEvent = extend( {}, setting.event );
 		delete setting.event;
 
 		style = new object.Settings({
-			color: new object.RGBA( 0, 0, 0, 100 ),
+			rgba: new object.RGBA( 0, 0, 0, 100 ),
 			width: 20,
 			draw: 0, // line
 			layer: 0,
 		});
-		style.create( pad );
+		style = style.create( "0" );
+		window.style = style;
 		
 		pad.extend({
 			setting: setting,
@@ -696,6 +692,7 @@
 			},
 			init: function( obj ){
 				var e = extend( {}, blankEvent );
+				e.add( "ok" );
 				
 				setTimeout( function(){
 					var msg;
@@ -741,15 +738,16 @@
 						e.run( "error", pad, { message: msg } );
 						return;
 					}
-					
-					// Create first layer
-					pad.layer.create();
-					
+										
 					// Write
 					var write = new object.Layer(0, "drawpad-write", setting.get( "CANVAS_WIDTH" ), setting.get( "CANVAS_HEIGHT" ));
 					pad.layer.write( write );
 					obj.write.append( pad.layer.write().getDOM( "$" ) );
 					console.log( "%c[drawpad.init] Pen layer has been set.", "font-weight: bold; color: darkgreen" );
+
+					// Create first layer
+					pad.layer.create();
+
 					pad.layer.index(0);
 					console.groupEnd();
 					
@@ -767,11 +765,19 @@
 						e.run( "error", pad, { message: msg } );
 						return;
 					}
+					
+					// Style
+					pad.setStyle( "rgba", pad.getStyle( "rgba" ) );
+					pad.setStyle( "width", pad.getStyle( "width" ) );
 
 					e.run( "ok", pad, {} );
-				}, 1 );
+				} );
 				
-				return e;
+				return {
+					on: function( name, func ){
+						return e.on( name, func );
+					}
+				};
 			},
 			// Set current session style
 			setStyle: function( obj, value ){
@@ -781,24 +787,33 @@
 						case "rgba":
 							rgba = new object.RGBA( value );
 							rgbaCSS = rgba.getCSS();
-							alpha = rgba.aplha() / 255;
+							alpha = rgba.alpha() / 255;
 							
 							context = pad.layer.write().getDOM( "context" );
 							context.strokeStyle = rgbaCSS;
 							context.fillStyle = rgbaCSS;
+							pad.layer.write().opacity( rgba.alpha() );
+							
+							// normal Context
+							context = pad.layer.getLayer().getDOM( "context" );
 							context.globalAlpha = alpha;
+							
+							// preview Context
+							context = pad.layer.getLayer().getDOM( "contextPad" );
+							context.globalAlpha = alpha;
+							
 							style.set( "rgba", rgba );
-							event.run( "colorChange", this, { rgba: rgba } );
+							ev.run( "colorChange", this, { rgba: rgba } );
 						break;
 						case "width":
 							context = pad.layer.write().getDOM( "context" );
 							context.lineWidth = value;
 							style.set( "width", value );
-							event.run( "widthChange", this, { width: value } );
+							ev.run( "widthChange", this, { width: value } );
 						break;
 						case "layer":
 							style.set( "layer", value );
-							event.run( "layerChange", this, { index: value, layer: pad.layer() } );
+							ev.run( "layerChange", this, { index: value, layer: pad.layer() } );
 						break;
 						case "mode":
 							if( pad.modes.get( value, true ) !== false ){
@@ -840,14 +855,15 @@
 
 		setting = new object.Settings({
 			index: 0,
-			data: [],
 			write: false,
 			root: false,
 			count: 0,
-			pad: false
+			pad: false,
+			indexCount: 0
 		});
-		setting = setting.create( this );
+		setting = setting.create( 0 );
 		var ev = setting.event;
+		var data = [];
 		
 		ev.add( "create" );
 		ev.add( "remove" );
@@ -868,7 +884,7 @@
 			return i;
 		};
 		
-		var pad;
+		var pad = false;
 		
 		// Public static function and variable
 		extend(layer, {
@@ -876,8 +892,7 @@
 				return ev.on( name, func );
 			},
 			regisPad: function( padObject ){
-				if( setting.get( "pad" ) === false ){
-					setting.set( "pad", padObject );
+				if( pad === false ){
 					pad = padObject;
 				}
 			},
@@ -898,7 +913,7 @@
 			},
 			create: function(){
 				layer = new object.Layer(
-					setting.add( "indexCount" ), 
+					setting.add( "indexCount", true ), 
 					"drawpad", 
 					pad.settings.get( "CANVAS_WIDTH" ), 
 					pad.settings.get( "CANVAS_HEIGHT" )
@@ -906,11 +921,12 @@
 				setting.get( "root" ).append( layer.getDOM( "$" ) );
 				
 				modes.get( "CreateLayer" ).eventSave();
-				setting.get( "data" ).push( layer );
+				data.push( layer );
+				window.data = data;
 				ev.run( "create", this, { layer: layer } );
 			},
 			remove: function( i ){
-				var dat = setting.get( "data" ), index;
+				var dat = data, index;
 				if( isNaN( index ) ){
 					while( ( index = dat.indexOf(i) ) !== -1 ){
 						this.remove( index );
@@ -919,17 +935,18 @@
 					if( typeof dat[ index ] !== "undefined" ){
 						ev.run( "remove", this, { layer: layer } );
 						dat[ index ].remove();
-						this.data.splice( index, 1 );
+						dat.splice( index, 1 );
+						
 					}
 				}
 				return this;
 			},
 			removeAll: function(){
-				$.each(this.data, function(i, o){
+				$.each(data, function(i, o){
 					ev.run( "remove", this, { layer: o } );
-					o.DOM.$.remove();
+					o.getDOM( "$" ).remove();
 				});
-				this.data = [];
+				data = [];
 				this.resetCount();
 				console.log("%c[drawpad.layer.removeAll] All layer was removed.", "font-weight: bold; color: darkorange");
 				ev.run( "removeAll", this, {} );
@@ -937,14 +954,14 @@
 			index: function( i ){
 				if( typeof i === "undefined" ){
 					return this.getLayer();
-				} else if ( isNaN( i ) ) {
+				} else if ( !isNaN( i ) ) {
 					if( i < 0 ){
 						return false;
 					}
 					if( i === setting.get( "index" ) ){
 						return true;
 					}
-					if( i > setting.get( "data" ).length ){
+					if( i > data.length ){
 						return false;
 					}
 					
@@ -961,7 +978,7 @@
 					ev.run( "changeIndex", this, { layer: this.getLayer() } );
 				} else if( i.layer ) {
 					var x;
-					if( ( x = setting.get( "data" ).indexOf( i ) ) !== -1 ){
+					if( ( x = data.indexOf( i ) ) !== -1 ){
 						this.index( x );
 						ev.run( "changeIndex", this, { layer: this.getLayer() } );
 					} else {
@@ -995,7 +1012,7 @@
 				ev.run( "changeLayerSetting", this, data );
 			},
 			clear: function(){
-				$.each(this.data, function(i, o){
+				$.each( data, function(i, o){
 					o.clear();
 					ev.run( "clear", this, { layer: o } );
 				});
@@ -1009,12 +1026,15 @@
 			},
 			getLayer: function( i ){
 				if ( typeof i === "undefined" ){
-					return setting.get( "data", setting.get( "index" ) );
-				} else if ( setting.isset( "data", i ) ){
+					return data[setting.get( "index" )];
+				} else if ( i > data.length ){
 					return false;
 				} else{
-					return setting.get( "data" )[i];
+					return data[i];
 				}
+			},
+			list: function(){
+				return data;
 			},
 			resetCount: function(){
 				setting.set( "count", 0 );
@@ -1034,7 +1054,7 @@
 			setting = new object.Settings({
 				data: {}
 			});
-		setting = setting.create( this );
+		setting = setting.create( 0 );
 		
 		$.extend( modes, {
 			regisPad: function( pad ){
@@ -1126,12 +1146,13 @@
 				function time(){
 					var count = limiter;
 					while(count-- > 0){
-						var cP = new pad.object.Position( data[d.axis][iNow - 1] );
-						var cN = new pad.object.Position( data[d.axis][iNow] );
+						var cP = new object.Position( data[d.axis][iNow - 1] );
+						var cN = new object.Position( data[d.axis][iNow] );
 						dThis.draw( cP, cN );
 						iNow++;
 						if( iNow >= dataLength - 1 ){
-							pad.history.save( checkCallback );
+							dThis.eventSave();
+							checkCallback();
 							return;
 						}
 					}
@@ -1186,7 +1207,7 @@
 				lastMouseClickedState = me.mouseClicked;
 				lastMouseInState = me.mouseIn;
 				
-				if ( me.mouseClicked ){
+				if ( drawState ){
 					pad.setStyle( "flow", true );
 				} else {
 					pad.setStyle( "flow", false );
@@ -1215,7 +1236,6 @@
 					lastSamePoint = 0;
 				}
 				
-				console.log( lastSamePoint );
 				if( lastSamePoint > pad.settings.get( "SAMEPOINT_LIMIT" )){
 					return false;
 				}
@@ -1245,7 +1265,7 @@
 				$("#value_jsize").html((history.getSize() / 1024).toFixed(2) + " KB");
 				$("#value_msize").html((history.getMsgPackSize() / 1024).toFixed(2) + " KB");
 			},
-			eventSave: function(){
+			eventSave: function( ){
 				var d = this.defines;
 
 				var data = {};
@@ -1260,6 +1280,12 @@
 				// add Event
 				pad.history.addEvent( data );
 				
+				var nowlayer = pad.layer.getLayer(),
+					elem = pad.layer.write().getDOM( "element" );
+				nowlayer.getDOM( "context" ).drawImage( elem, 0, 0 );
+				nowlayer.getDOM( "contextPad" ).drawImage( elem, 0, 0 );
+				pad.layer.write().getDOM( "context" ).clearRect( 0, 0, pad.settings.get( "CANVAS_WIDTH" ), pad.settings.get( "CANVAS_HEIGHT" ) );
+
 				// add History
 				pad.history.addHistory({
 					data: {
@@ -1316,6 +1342,7 @@
 					return false;
 				}
 				pad.layer.create();
+				this.eventSave();
 				if(callback){ 
 					callback( this );
 				}
@@ -1386,6 +1413,7 @@
 					}, false);
 				}
 				
+				this.eventSave();
 				if( callback ){
 					callback( this );
 				}
@@ -1464,6 +1492,7 @@
 				}
 				var d = this.defines;
 				pad.setStyle( data[d.name], data[d.value] );
+				this.eventSave();
 				if(callback){
 					callback( this );
 				}
@@ -1586,7 +1615,6 @@
 	
 	mouse = mouse();
 
-		
 	var history = function(){
 		var EventCount = -1,
 			TimeCount = -1,
@@ -1690,7 +1718,12 @@
 				// Clear redo before save history
 				this.clearRedo();
 				
-				var h = historyEvent;
+				var h = historyEvent,
+					Tcount = TimeCount,
+					Ecount = EventCount;
+
+				TimeCount = 0;
+				EventCount = 0;
 				historyEvent = [];
 
 				// Clear all session
@@ -1731,7 +1764,7 @@
 					if( recall.call ){
 						recall.call = false;
 					}
-					while(h[eventIndex][pad.modes.define.time] <= Math.floor(timeIndex)){
+					while(h[eventIndex][pad.modes.defines.time] <= Math.floor(timeIndex)){
 						if( drawingState ){
 							recall.call = timeout;
 							return;
@@ -1742,15 +1775,17 @@
 								("000" + Math.floor(timeIndex * pad.settings.TIME_DELAY / 1000)).slice(-3), 
 								("   " + Math.floor(timeIndex * pad.settings.TIME_DELAY % 1000)).slice(-3), 
 								("      " + pad.settings.replaySpeed).slice(-6),
-								pad.modes[h[eventIndex][pad.modes.define.drawType]].name
+								pad.modes.get( h[eventIndex][pad.modes.defines.drawType] ).name
 							);
 							drawingState = true;
-							pad.modes[h[eventIndex][pad.modes.define.drawType]]
+							pad.modes.get( h[eventIndex][pad.modes.defines.drawType] )
 								.play(h[eventIndex], callerback);
 							eventIndex++;
 							if(eventIndex >= endLength){
 								replayLastState = true;
 								historyEvent = h;
+								TimeCount = Tcount;
+								EventCount = Ecount;
 								return true;
 							}
 						}
@@ -1777,13 +1812,133 @@
 		layer: layer,
 		modes: modes,
 		mouse: mouse,
-		history: history
+		history: history,
+		object: object
+	});
+
+	var padui = function(){
+		var padui = {},
+			options = {
+				pad: false,
+				layer: {
+					example: $( "<div></div>" ),
+					parts: {
+						preview: ".preview",
+						changeThis: ".preview"
+					}
+				},
+				button: {
+					layer: {
+						create: $( "" )
+					}
+				}
+			},
+			myEvent = {},
+			layers = {};
+			
+		//
+		// Layer
+		//
+		// Layer - Button
+		// Create Button
+		function buttonCreateLayer(){
+			options.pad.layer.create();
+		}
+		
+		// Layer - Event
+		// Created
+		function layerCreated( sender, data ){
+			var lay = $( options.layer.example ).clone().removeClass("example");
+			layers[data.layer.indexer] = lay;
+
+			lay.children( options.layer.parts.preview ).append( data.layer.getDOM( "previewPad" ) );
+			myEvent.run( "layerCreated", padui, { layer: data.layer, element: lay } );
+		}
+		
+		padui.extend = extend;
+		
+		padui.extend({
+			event: myEvent,
+			on: function( name, func ){
+				myEvent.on( name, func );
+				return this;
+			},
+			layer: {
+				list: function(){
+					var li = options.pad.layer.list(),
+						elem = [];
+						
+					for( var i in li ){
+						elem.push({
+							indexer: li[i].indexer,
+							element: layers[li[i].indexer] 
+						});
+					}
+					
+					return {
+						list: elem,
+						selected: options.pad.layer.getLayer().indexer
+					};
+				}
+			},
+			init: function( option ){
+				extend( true, options, option );
+				var ev;
+				
+				if( options.pad && options.pad.layer && options.pad.object ){
+					var s = new options.pad.object.Settings({});
+					ev = s.create( "0" ).event;
+					extend(myEvent, ev);
+					
+					// Add already exists layer
+					var lays = options.pad.layer.list();
+					for( var i in lays ){
+						layerCreated( option.pad.layer, {
+							layer: lays[i]
+						});
+					}
+					
+					// Add all events
+					// Return
+					ev.add( "ok" );
+							
+					// UI event
+					myEvent.add( "layerCreated" );
+							
+					setTimeout( function(){
+						// All events listener
+						options.pad.layer.on( "create", layerCreated );
+						
+						// All button events
+						$( options.button.layer.create ).click( buttonCreateLayer );
+						ev.run( "ok", padui, {} );
+					}, 100);
+				} else {
+					throw "No pad detected in option, PadUI needs Pad. (option.pad)";
+				}
+				
+				return {
+					on: function( name, func ){
+						ev.on( name, func );
+					}
+				};
+			}
+			
+		});
+		
+		return padui;
+	};
+	
+	padui = padui();
+
+
+	padui.extend({
 	});
 
 	var drawpad = {},
 		data = {
 			"Pad": pad,
-			"PadUI": undefined,
+			"PadUI": padui,
 			"window": window,
 			"jQuery": $,
 			"document": document

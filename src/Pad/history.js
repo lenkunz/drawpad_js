@@ -1,5 +1,4 @@
 define(function(){
-		
 	var history = function(){
 		var EventCount = -1,
 			TimeCount = -1,
@@ -103,7 +102,12 @@ define(function(){
 				// Clear redo before save history
 				this.clearRedo();
 				
-				var h = historyEvent;
+				var h = historyEvent,
+					Tcount = TimeCount,
+					Ecount = EventCount;
+
+				TimeCount = 0;
+				EventCount = 0;
 				historyEvent = [];
 
 				// Clear all session
@@ -144,7 +148,7 @@ define(function(){
 					if( recall.call ){
 						recall.call = false;
 					}
-					while(h[eventIndex][pad.modes.define.time] <= Math.floor(timeIndex)){
+					while(h[eventIndex][pad.modes.defines.time] <= Math.floor(timeIndex)){
 						if( drawingState ){
 							recall.call = timeout;
 							return;
@@ -155,15 +159,17 @@ define(function(){
 								("000" + Math.floor(timeIndex * pad.settings.TIME_DELAY / 1000)).slice(-3), 
 								("   " + Math.floor(timeIndex * pad.settings.TIME_DELAY % 1000)).slice(-3), 
 								("      " + pad.settings.replaySpeed).slice(-6),
-								pad.modes[h[eventIndex][pad.modes.define.drawType]].name
+								pad.modes.get( h[eventIndex][pad.modes.defines.drawType] ).name
 							);
 							drawingState = true;
-							pad.modes[h[eventIndex][pad.modes.define.drawType]]
+							pad.modes.get( h[eventIndex][pad.modes.defines.drawType] )
 								.play(h[eventIndex], callerback);
 							eventIndex++;
 							if(eventIndex >= endLength){
 								replayLastState = true;
 								historyEvent = h;
+								TimeCount = Tcount;
+								EventCount = Ecount;
 								return true;
 							}
 						}

@@ -6,7 +6,7 @@ define(function(){
 		
 		Settings = function( obj ){
 			if( obj ){
-				this.index = intCount;
+				this.indexer = intCount;
 				this.set(obj);
 				data[intCount++] = {};
 			}
@@ -15,16 +15,16 @@ define(function(){
 		
 		Settings.prototype = {
 			ex: {},
-			index: -1,
+			indexer: -1,
 			get: function( obj ){
-				if(typeof obj !== "undefined" && typeof data[ this.index ][obj] !== "undefined"){
-					return data[ this.index ][ obj ];
+				if(typeof obj !== "undefined" && typeof data[ this.indexer ][obj] !== "undefined"){
+					return data[ this.indexer ][ obj ];
 				}
 				return 0;
 			},
 			create: function( obj ){
-				data[ this.index ][ obj ] = $.extend({}, this.ex);
-				return data[ this.index ][ obj ];
+				data[ this.indexer ][ obj ] = $.extend( true, {}, this.ex );
+				return data[ this.indexer ][ obj ];
 			},
 			set: function( obj ){
 				var event, set, add, get, isset;

@@ -23,10 +23,14 @@ define([
 				}
 			});
 			
+		var indexCount = 0;
+			
 		// constructor
 		var Layer = function(index, className, width, height){
 			// init
-			var s = setting.create(this);
+			this.indexer = indexCount;
+			var s = setting.create( indexCount++ );
+			this.s = setting;
 			s.set({
 				id: index,
 				index: index,
@@ -71,18 +75,19 @@ define([
 		// public functions and variable
 		Layer.prototype = {
 			layer: true,
+			indexer: -1,
 			on: function( name, func ){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				if( s.event.has( name ) ){
 					s.event.add( name, func );
 				}
 			},
 			listEvent: function(){
-				return setting.event.list();
+				return setting.get( this.indexer ).event.list();
 			},
 			// Get element
 			getDOM: function( name ){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				if( s.isset( "DOM", name ) ){
 					return s.get( "DOM", name );
 				} else {
@@ -91,20 +96,19 @@ define([
 			},
 			// Clear canvas
 			clear: function(){
-				var s = setting.get( this ); // Settings
+				var s = setting.get( this.indexer ); // Settings
 				if( s.isset( "DOM", "context" ) ){
-					s.get( "DOM", "context" ).clearRect( 0, 0, s.width, s.height );
+					s.get( "DOM", "context" ).clearRect( 0, 0, s.get( "width" ), s.get( "height" ) );
 				}
 				if( s.isset( "DOM", "contextPad" ) ){
-					s.get( "DOM", "contextPad" ).clearRect( 0, 0, s.width, s.height );
+					s.get( "DOM", "contextPad" ).clearRect( 0, 0, s.get( "width" ), s.get( "height" ) );
 				}
 
-				this.clearPreview();
 				s.event.run( "clear", this, {});
 				return this;
 			},
 			order: function( i ){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				if( typeof i === "undefined" ){
 					return s.get( "index" );
 				}else if( i >= 0 && i < 2000 ){
@@ -117,7 +121,7 @@ define([
 				return this;
 			},
 			opacity: function( o ){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				if( typeof o === undefined ){
 					return s.get( "opacity" );
 				}else if( o >= 0 && o <= 255 ){
@@ -132,7 +136,7 @@ define([
 				return this;
 			},
 			name: function(name){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				if( typeof name === "undefined" ){
 					return s.get( "name" );
 				} else {
@@ -142,16 +146,16 @@ define([
 				}
 			},
 			getDataURL: function(){
-				return setting.get( this ).get( "DOM", "element" ).getDataURL();
+				return setting.get( this.indexer ).get( "DOM", "element" ).getDataURL();
 			},
 			remove: function(){
-				var s = setting.get( this );
+				var s = setting.get( this.indexer );
 				s.get( "DOM", "$" ).remove();
 				$( s.get( "DOM", "previewPad" ) ).remove();
 				s.event.run("remove", this, { layer: this });
 			},
 			changethis: function(){
-				setting.get( this ).event.run("changethis", this, { layer: this });				
+				setting.get( this.indexer ).event.run("changethis", this, { layer: this });				
 			}
 		};
 		

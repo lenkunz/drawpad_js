@@ -1,10 +1,11 @@
 define([
-	"./Pad/pad"
-], function(pad){
+	"./Pad/pad",
+	"./PadUI/padui"
+], function(pad, padui){
 	var drawpad = {},
 		data = {
 			"Pad": pad,
-			"PadUI": undefined,
+			"PadUI": padui,
 			"window": window,
 			"jQuery": $,
 			"document": document

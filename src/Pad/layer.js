@@ -8,14 +8,15 @@ define([
 
 		setting = new object.Settings({
 			index: 0,
-			data: [],
 			write: false,
 			root: false,
 			count: 0,
-			pad: false
+			pad: false,
+			indexCount: 0
 		});
-		setting = setting.create( this );
+		setting = setting.create( 0 );
 		var ev = setting.event;
+		var data = [];
 		
 		ev.add( "create" );
 		ev.add( "remove" );
@@ -36,7 +37,7 @@ define([
 			return i;
 		};
 		
-		var pad;
+		var pad = false;
 		
 		// Public static function and variable
 		extend(layer, {
@@ -44,8 +45,7 @@ define([
 				return ev.on( name, func );
 			},
 			regisPad: function( padObject ){
-				if( setting.get( "pad" ) === false ){
-					setting.set( "pad", padObject );
+				if( pad === false ){
 					pad = padObject;
 				}
 			},
@@ -66,7 +66,7 @@ define([
 			},
 			create: function(){
 				layer = new object.Layer(
-					setting.add( "indexCount" ), 
+					setting.add( "indexCount", true ), 
 					"drawpad", 
 					pad.settings.get( "CANVAS_WIDTH" ), 
 					pad.settings.get( "CANVAS_HEIGHT" )
@@ -74,11 +74,12 @@ define([
 				setting.get( "root" ).append( layer.getDOM( "$" ) );
 				
 				modes.get( "CreateLayer" ).eventSave();
-				setting.get( "data" ).push( layer );
+				data.push( layer );
+				window.data = data;
 				ev.run( "create", this, { layer: layer } );
 			},
 			remove: function( i ){
-				var dat = setting.get( "data" ), index;
+				var dat = data, index;
 				if( isNaN( index ) ){
 					while( ( index = dat.indexOf(i) ) !== -1 ){
 						this.remove( index );
@@ -87,17 +88,18 @@ define([
 					if( typeof dat[ index ] !== "undefined" ){
 						ev.run( "remove", this, { layer: layer } );
 						dat[ index ].remove();
-						this.data.splice( index, 1 );
+						dat.splice( index, 1 );
+						
 					}
 				}
 				return this;
 			},
 			removeAll: function(){
-				$.each(this.data, function(i, o){
+				$.each(data, function(i, o){
 					ev.run( "remove", this, { layer: o } );
-					o.DOM.$.remove();
+					o.getDOM( "$" ).remove();
 				});
-				this.data = [];
+				data = [];
 				this.resetCount();
 				console.log("%c[drawpad.layer.removeAll] All layer was removed.", "font-weight: bold; color: darkorange");
 				ev.run( "removeAll", this, {} );
@@ -105,14 +107,14 @@ define([
 			index: function( i ){
 				if( typeof i === "undefined" ){
 					return this.getLayer();
-				} else if ( isNaN( i ) ) {
+				} else if ( !isNaN( i ) ) {
 					if( i < 0 ){
 						return false;
 					}
 					if( i === setting.get( "index" ) ){
 						return true;
 					}
-					if( i > setting.get( "data" ).length ){
+					if( i > data.length ){
 						return false;
 					}
 					
@@ -129,7 +131,7 @@ define([
 					ev.run( "changeIndex", this, { layer: this.getLayer() } );
 				} else if( i.layer ) {
 					var x;
-					if( ( x = setting.get( "data" ).indexOf( i ) ) !== -1 ){
+					if( ( x = data.indexOf( i ) ) !== -1 ){
 						this.index( x );
 						ev.run( "changeIndex", this, { layer: this.getLayer() } );
 					} else {
@@ -163,7 +165,7 @@ define([
 				ev.run( "changeLayerSetting", this, data );
 			},
 			clear: function(){
-				$.each(this.data, function(i, o){
+				$.each( data, function(i, o){
 					o.clear();
 					ev.run( "clear", this, { layer: o } );
 				});
@@ -177,12 +179,15 @@ define([
 			},
 			getLayer: function( i ){
 				if ( typeof i === "undefined" ){
-					return setting.get( "data", setting.get( "index" ) );
-				} else if ( setting.isset( "data", i ) ){
+					return data[setting.get( "index" )];
+				} else if ( i > data.length ){
 					return false;
 				} else{
-					return setting.get( "data" )[i];
+					return data[i];
 				}
+			},
+			list: function(){
+				return data;
 			},
 			resetCount: function(){
 				setting.set( "count", 0 );

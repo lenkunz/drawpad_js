@@ -17,6 +17,7 @@ define([
 					return false;
 				}
 				pad.layer.create();
+				this.eventSave();
 				if(callback){ 
 					callback( this );
 				}

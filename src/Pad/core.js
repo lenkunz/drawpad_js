@@ -16,18 +16,19 @@ define([
 			LAYERPAD_WIDTH: 150,
 			SAMEPOINT_LIMIT: 1,	
 		});
-		setting = setting.create( pad );
+		setting = setting.create( "0" );
 		var ev = setting.event,
 			blankEvent = extend( {}, setting.event );
 		delete setting.event;
 
 		style = new object.Settings({
-			color: new object.RGBA( 0, 0, 0, 100 ),
+			rgba: new object.RGBA( 0, 0, 0, 100 ),
 			width: 20,
 			draw: 0, // line
 			layer: 0,
 		});
-		style.create( pad );
+		style = style.create( "0" );
+		window.style = style;
 		
 		pad.extend({
 			setting: setting,
@@ -47,6 +48,7 @@ define([
 			},
 			init: function( obj ){
 				var e = extend( {}, blankEvent );
+				e.add( "ok" );
 				
 				setTimeout( function(){
 					var msg;
@@ -92,15 +94,16 @@ define([
 						e.run( "error", pad, { message: msg } );
 						return;
 					}
-					
-					// Create first layer
-					pad.layer.create();
-					
+										
 					// Write
 					var write = new object.Layer(0, "drawpad-write", setting.get( "CANVAS_WIDTH" ), setting.get( "CANVAS_HEIGHT" ));
 					pad.layer.write( write );
 					obj.write.append( pad.layer.write().getDOM( "$" ) );
 					console.log( "%c[drawpad.init] Pen layer has been set.", "font-weight: bold; color: darkgreen" );
+
+					// Create first layer
+					pad.layer.create();
+
 					pad.layer.index(0);
 					console.groupEnd();
 					
@@ -118,11 +121,19 @@ define([
 						e.run( "error", pad, { message: msg } );
 						return;
 					}
+					
+					// Style
+					pad.setStyle( "rgba", pad.getStyle( "rgba" ) );
+					pad.setStyle( "width", pad.getStyle( "width" ) );
 
 					e.run( "ok", pad, {} );
-				}, 1 );
+				} );
 				
-				return e;
+				return {
+					on: function( name, func ){
+						return e.on( name, func );
+					}
+				};
 			},
 			// Set current session style
 			setStyle: function( obj, value ){
@@ -132,24 +143,33 @@ define([
 						case "rgba":
 							rgba = new object.RGBA( value );
 							rgbaCSS = rgba.getCSS();
-							alpha = rgba.aplha() / 255;
+							alpha = rgba.alpha() / 255;
 							
 							context = pad.layer.write().getDOM( "context" );
 							context.strokeStyle = rgbaCSS;
 							context.fillStyle = rgbaCSS;
+							pad.layer.write().opacity( rgba.alpha() );
+							
+							// normal Context
+							context = pad.layer.getLayer().getDOM( "context" );
 							context.globalAlpha = alpha;
+							
+							// preview Context
+							context = pad.layer.getLayer().getDOM( "contextPad" );
+							context.globalAlpha = alpha;
+							
 							style.set( "rgba", rgba );
-							event.run( "colorChange", this, { rgba: rgba } );
+							ev.run( "colorChange", this, { rgba: rgba } );
 						break;
 						case "width":
 							context = pad.layer.write().getDOM( "context" );
 							context.lineWidth = value;
 							style.set( "width", value );
-							event.run( "widthChange", this, { width: value } );
+							ev.run( "widthChange", this, { width: value } );
 						break;
 						case "layer":
 							style.set( "layer", value );
-							event.run( "layerChange", this, { index: value, layer: pad.layer() } );
+							ev.run( "layerChange", this, { index: value, layer: pad.layer() } );
 						break;
 						case "mode":
 							if( pad.modes.get( value, true ) !== false ){

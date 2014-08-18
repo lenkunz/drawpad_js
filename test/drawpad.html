@@ -15,8 +15,46 @@ drawpad.on( 'ok', function( padCollection ){
 	pad.init({
 		layer: $("#drawpad-layers"),
 		write: $("#drawpad-writer")
-	})
+	}).on( 'ok', function(){
+		padui = padCollection.get( "PadUI" );
+		padui.init({
+			pad: pad,
+			layer: {
+				example: $( ".pad-layers.example" ),
+			},
+			button: {
+				layer: {
+					create: $( "#newlayer" ),
+				},
+			}
+		}).on( "ok", function( ui, data ){
+			ui.on( "layerCreated", layerListRefresh );
+			layerListRefresh( ui );
+		});
+	});
 	
+	function layerListRefresh( ui, data ){
+		roll = $( "#layer-roller" );
+		roll.empty();
+		var uiLayerList = ui.layer.list();
+		var selected = uiLayerList.selected;
+		var list = uiLayerList.list;
+		
+
+		for( var i in list ){
+			if( typeof list[i] === "undefined" ){
+				continue;
+			}
+			if( list[i].indexer === selected ){
+				list[i].element.addClass( "selected" );
+			} else {
+				list[i].element.removeClass( "selected" );
+			}
+						
+			roll.append( list[i].element );
+		}	
+	}
+		
 	window.pad = pad;
 
 }).on( 'error', function( err ){
@@ -35,12 +73,12 @@ drawpad.on( 'ok', function( padCollection ){
 		<div id="layer-panel">
 			<div class="pane-newlayer" id="newlayer">New</div>
 		</div>
+		<div class="pad-layers example">
+			<div class="name">Test</div>
+			<div class="preview"></div>
+		</div>
 		<div id="layer-container">
 			<div id="layer-roller">
-				<div class="pad-layers example">
-					<div class="name">Test</div>
-					<div class="preview"></div>
-				</div>
 			</div>
 		</div>
 	</div>

@@ -42,12 +42,13 @@ define([
 				function time(){
 					var count = limiter;
 					while(count-- > 0){
-						var cP = new pad.object.Position( data[d.axis][iNow - 1] );
-						var cN = new pad.object.Position( data[d.axis][iNow] );
+						var cP = new object.Position( data[d.axis][iNow - 1] );
+						var cN = new object.Position( data[d.axis][iNow] );
 						dThis.draw( cP, cN );
 						iNow++;
 						if( iNow >= dataLength - 1 ){
-							pad.history.save( checkCallback );
+							dThis.eventSave();
+							checkCallback();
 							return;
 						}
 					}
@@ -102,7 +103,7 @@ define([
 				lastMouseClickedState = me.mouseClicked;
 				lastMouseInState = me.mouseIn;
 				
-				if ( me.mouseClicked ){
+				if ( drawState ){
 					pad.setStyle( "flow", true );
 				} else {
 					pad.setStyle( "flow", false );
@@ -131,7 +132,6 @@ define([
 					lastSamePoint = 0;
 				}
 				
-				console.log( lastSamePoint );
 				if( lastSamePoint > pad.settings.get( "SAMEPOINT_LIMIT" )){
 					return false;
 				}
@@ -161,7 +161,7 @@ define([
 				$("#value_jsize").html((history.getSize() / 1024).toFixed(2) + " KB");
 				$("#value_msize").html((history.getMsgPackSize() / 1024).toFixed(2) + " KB");
 			},
-			eventSave: function(){
+			eventSave: function( ){
 				var d = this.defines;
 
 				var data = {};
@@ -176,6 +176,12 @@ define([
 				// add Event
 				pad.history.addEvent( data );
 				
+				var nowlayer = pad.layer.getLayer(),
+					elem = pad.layer.write().getDOM( "element" );
+				nowlayer.getDOM( "context" ).drawImage( elem, 0, 0 );
+				nowlayer.getDOM( "contextPad" ).drawImage( elem, 0, 0 );
+				pad.layer.write().getDOM( "context" ).clearRect( 0, 0, pad.settings.get( "CANVAS_WIDTH" ), pad.settings.get( "CANVAS_HEIGHT" ) );
+
 				// add History
 				pad.history.addHistory({
 					data: {

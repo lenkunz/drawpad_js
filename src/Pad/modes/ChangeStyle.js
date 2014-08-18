@@ -23,6 +23,7 @@ define([
 				}
 				var d = this.defines;
 				pad.setStyle( data[d.name], data[d.value] );
+				this.eventSave();
 				if(callback){
 					callback( this );
 				}

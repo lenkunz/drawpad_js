@@ -1,30 +1,23 @@
-define([
-	"./Settings"
-], function( Settings ){
+define(function(){
 	var RGBA = function(){
 		// RGBA - Object
 		// Private static zone
-		var setting, RGBA;
-		
-		// create settings
-		setting = new Settings({
-			value: 255
-		});
-		
+		var RGBA;
+				
 		// constructor
 		RGBA = function( r, g, b, a ){
-			var s = setting.create( this );
 			if ( r && r.rgba ){
-				s.set( "value", r.getInt() );
+				this.value = r.getInt();
 			} else if ( typeof r !== "undefined" && typeof g !== "undefined" && typeof b !== "undefined" && typeof a !== "undefined" ){
-				s.set( "value", RGBA.toInt(r, g, b, a) );
+				this.value = RGBA.toInt(r, g, b, a);
 			} else if ( !isNaN(r) ){
-				s.set( "value", r );
+				this.value = r;
 			}
 		};
 		
 		// static
 		$.extend(RGBA, {
+			value: 255,
 			toInt: function(r, g, b, a){
 				if (r.rgba){
 					return r.color();
@@ -56,66 +49,62 @@ define([
 		RGBA.prototype = {
 			rgba: true,
 			red: function( i ){
-				var s = setting.get( this );
 				if ( i !== undefined && !isNaN(i) ){
 					if ( i >= 0 && i <= 255 ){
-						var n = s.get( "value" ) & 0x00FFFFFF;
+						var n = this.value & 0x00FFFFFF;
 						n = n + ( i << 24 );
-						s.set( "value", n );
+						this.value = n;
 					} else {
 						console.warn( "[drawpad/object/RGBA.red] Color is out of bound [0-255][%i]", i );
 					}
 				} else {
-					return ( s.get( "value" ) >> 24 ) & 0xFF;
+					return ( this.value >> 24 ) & 0xFF;
 				}
 			},
 			green: function( i ){
-				var s = setting.get( this );
 				if ( i !== undefined && !isNaN(i) ){
 					if( i >= 0 && i <= 255 ){
-						var n = s.get( "value" ) & 0xFF00FFFF;
+						var n = this.value & 0xFF00FFFF;
 						n = n + ( i << 16 );
-						s.set( "value", n );
+						this.value = n;
 					} else {
 						console.warn( "[drawpad/object/RGBA.green] Color is out of bound [0-255][%i]", i );
 					}
 				} else {
-					return ( s.get( "value" ) >> 16 ) & 0xFF;
+					return ( this.value >> 16 ) & 0xFF;
 				}
 			},
 			blue: function( i ){
-				var s = setting.get( this );
 				if ( i !== undefined && !isNaN(i) ){
 					if( i >= 0 && i <= 255 ){
-						var n = s.get( "value" ) & 0xFFFF00FF;
+						var n = this.value & 0xFFFF00FF;
 						n = n + ( i << 8 );
-						s.set( "value", n );
+						this.value = n;
 					} else {
 						console.warn( "[drawpad/object/RGBA.blue] Color is out of bound [0-255][%i]", i );
 					}
 				} else {
-					return ( s.get( "value" ) >> 8 ) & 0xFF;
+					return ( this.value >> 8 ) & 0xFF;
 				}
 			},
 			alpha: function( i ){
-				var s = setting.get( this );
 				if( i !== undefined && !isNaN(i) ){
 					if( i >= 0 && i <= 255 ){
-						var n = s.get( "value" ) & 0xFFFFFF00;
+						var n = this.value & 0xFFFFFF00;
 						n = n + i;
-						s.set( "value", n );
+						this.value = n;
 					} else {
 						console.warn( "[drawpad/object/RGBA.alpha] Alpha level is out of bound [0-255][%i]", i );
 					}
 				} else {
-					return s.get( "value" ) & 0xFF;
+					return this.value & 0xFF;
 				}
 			},
 			getCSS: function(){
-				return setting.get( this ).get( "value" );
+				return this.value;
 			},
 			getInt: function(){
-				return setting.get( this ).get( "value" );
+				return this.value;
 			}
 		};
 		
