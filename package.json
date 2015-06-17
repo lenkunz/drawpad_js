@@ -1,30 +1,34 @@
 {
   "name": "drawpad",
+  "title": "Pad and PadUI drawpad API",
   "description": "Canvas API manager for drawings events and collects history (Pad), User Interfaces for Pad (PadUI)",
   "version": "0.1.0",
+  "homepage": "https://github.com/lenkyun/drawpad_js",
   "engines": {
     "node": ">= 0.8.0"
   },
   "author": {
     "name": "Rapeapach Suwasri",
-	"url": "https://facebook.com/Lenkyun"
+    "email": "kagaminelenkyun@gmail.com",
+    "url": "https://facebook.com/Lenkyun"
   },
   "keywords": [
     "javascript",
-	"canvas",
-	"user-interface",
-	"drawpad",
+    "canvas",
+    "user-interface",
+    "drawpad"
   ],
   "scripts": {
-	"build": "npm install && grunt"
+    "build": "npm install && grunt",
+    "test": "npm install && grunt"
   },
   "licenses": {
-    "type": "CC0 1.0",
-    "url": "http://creativecommons.org/publicdomain/zero/1.0/"	
+	"type": "MIT",
+	"url": "http://lenkyun.tk/drawpad/license"
   },
   "repository": {
-    type: "git",
-    url: "https://github.com/lenkyun/drawpad_js.git"
+    "type": "git",
+    "url": "https://github.com/lenkyun/drawpad_js.git"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
@@ -36,10 +40,11 @@
     "grunt-contrib-uglify": "~0.2.0",
     "grunt-contrib-watch": "~0.4.0",
     "grunt-jsonlint": "^1.0.4",
+    "load-grunt-tasks": "^0.6.0",
     "requirejs": "^2.1.14"
   },
   "dependencies": {
     "jquery": "^2.1.1"
   },
-  private: true,
+  "private": true
 }

@@ -7,7 +7,6 @@
 	"immed": true,
 	"noarg": true,
 	"onevar": true,
-	"quotmark": "double",
 	"smarttabs": true,
 	"trailing": true,
 	"undef": true,
@@ -19,11 +18,6 @@
 
 	"globals": {
 		"jQuery": true,
-		"define": true,
-		"require": true,
-		"$": true,
-		"extend": true,
-		"_error": true,
 		"console": true,
 		"msgpack": true
 	}
